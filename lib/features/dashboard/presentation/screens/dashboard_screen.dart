@@ -106,10 +106,7 @@ class DashboardScreen extends StatelessWidget {
                 SizedBox(height: 8),
                 Text(
                   "আপনার ওষুধের পাতা স্ক্যান করুন অথবা প্রেসক্রিপশন আপলোড করে এআই নির্দেশিকা পান।",
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.white70,
-                  ),
+                  style: TextStyle(fontSize: 15, color: Colors.white70),
                 ),
               ],
             ),
@@ -162,10 +159,7 @@ class DashboardScreen extends StatelessWidget {
                 Expanded(
                   child: Text(
                     AppConstants.medicalDisclaimer,
-                    style: TextStyle(
-                      color: AppTheme.warningRed,
-                      fontSize: 13,
-                    ),
+                    style: TextStyle(color: AppTheme.warningRed, fontSize: 13),
                   ),
                 ),
               ],
@@ -247,8 +241,12 @@ class DashboardScreen extends StatelessWidget {
                 create: (blocContext) => MedicineBloc(
                   repository: MedicineRepositoryImpl(
                     ocrService: OcrService(),
-                    localDataSource: MedicineLocalDataSourceImpl(DatabaseHelper.instance),
-                    remoteDataSource: MedicineRemoteDataSourceImpl(GeminiService()),
+                    localDataSource: MedicineLocalDataSourceImpl(
+                      DatabaseHelper.instance,
+                    ),
+                    remoteDataSource: MedicineRemoteDataSourceImpl(
+                      GeminiService(),
+                    ),
                   ),
                   ttsService: TtsService(),
                 ),
@@ -339,9 +337,7 @@ class DashboardScreen extends StatelessWidget {
           const SizedBox(height: 8),
           const Text(
             "ফিচারটি শীঘ্রই যুক্ত করা হবে",
-            style: TextStyle(
-              color: AppTheme.textSecondary,
-            ),
+            style: TextStyle(color: AppTheme.textSecondary),
           ),
         ],
       ),
