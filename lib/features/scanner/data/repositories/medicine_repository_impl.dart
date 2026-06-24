@@ -14,28 +14,48 @@ class MedicineRepositoryImpl implements MedicineRepository {
     required OcrService ocrService,
     required MedicineLocalDataSource localDataSource,
     required MedicineRemoteDataSource remoteDataSource,
-  })  : _ocrService = ocrService,
-        _localDataSource = localDataSource,
-        _remoteDataSource = remoteDataSource;
+  }) : _ocrService = ocrService,
+       _localDataSource = localDataSource,
+       _remoteDataSource = remoteDataSource;
 
   @override
-  Future<(Failure?, Medicine?)> getMedicineDetailsFromImage(String imagePath) async {
+  Future<(Failure?, Medicine?)> getMedicineDetailsFromImage(
+    String imagePath,
+  ) async {
     try {
       final ocrText = await _ocrService.recognizeText(imagePath);
       print("OCR Text: $ocrText");
+
       if (ocrText.trim().isEmpty) {
-        return (const ServerFailure("ছবি থেকে কোনো লেখা পড়া যায়নি।"), null);
+        return (
+          const ServerFailure(
+            'ছবি থেকে কোনো লেখা পড়া যায়নি।\n'
+            'ওষুধের ছবি স্পষ্ট এবং ওষুধের লেখা দৃশ্যমান নিশ্চিত করুন।',
+          ),
+          null,
+        );
       }
 
-      final cachedMedicine = await _localDataSource.getCachedMedicineByOcrText(ocrText);
+      final cachedMedicine = await _localDataSource.getCachedMedicineByOcrText(
+        ocrText,
+      );
       if (cachedMedicine != null) {
         await _localDataSource.saveScanLog(cachedMedicine.name, true);
         return (null, cachedMedicine);
       }
 
-      final remoteMedicine = await _remoteDataSource.fetchMedicineDetails(ocrText);
+      final remoteMedicine = await _remoteDataSource.fetchMedicineDetails(
+        ocrText,
+      );
+
       if (remoteMedicine == null) {
-        return (const ServerFailure("ওষুধের তথ্য পাওয়া যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।"), null);
+        return (
+          const ServerFailure(
+            'তথ্য পাওয়া যায়নি।\n'
+            'Free কোটা শেষ হয়ে থাকতে পারে — কিছুক্ষণ পর আবার চেষ্টা করুন।',
+          ),
+          null,
+        );
       }
 
       await _localDataSource.cacheMedicine(remoteMedicine);
@@ -44,7 +64,19 @@ class MedicineRepositoryImpl implements MedicineRepository {
       return (null, remoteMedicine);
     } catch (e) {
       print("Repository Error: $e");
-      return (ServerFailure("ত্রুটি ঘটেছে: ${e.toString()}"), null);
+      final msg = e.toString().toLowerCase();
+      if (msg.contains('quota') ||
+          msg.contains('429') ||
+          msg.contains('resource_exhausted')) {
+        return (
+          const ServerFailure(
+            'কোটা শেষ হয়ে গেছে।\n'
+            'ফ্রি টায়ারের দৈনিক সীমা শেষ — কিছুক্ষণ পর আবার চেষ্টা করুন।',
+          ),
+          null,
+        );
+      }
+      return (ServerFailure('ত্রুটি ঘটেছে: ${e.toString()}'), null);
     }
   }
 }

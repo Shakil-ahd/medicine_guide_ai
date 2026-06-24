@@ -23,10 +23,22 @@ class MedicineLocalDataSourceImpl implements MedicineLocalDataSource {
     final results = await db.query('medicines');
     final cleanOcr = ocrText.toLowerCase();
 
-    for (final row in results) {
-      final name = (row['name'] as String).toLowerCase();
-      if (cleanOcr.contains(name) && name.isNotEmpty) {
-        return MedicineModel.fromDbMap(row);
+    // Sort results by name length descending to match the most specific name first
+    final sortedRows = List<Map<String, dynamic>>.from(results);
+    sortedRows.sort((a, b) {
+      final nameA = (a['name'] as String? ?? '').length;
+      final nameB = (b['name'] as String? ?? '').length;
+      return nameB.compareTo(nameA);
+    });
+
+    for (final row in sortedRows) {
+      final name = (row['name'] as String? ?? '').toLowerCase();
+      if (name.isNotEmpty) {
+        // Use word boundary to avoid false matching partial words (e.g. "losec" inside "losectil")
+        final regExp = RegExp('\\b${RegExp.escape(name)}\\b');
+        if (regExp.hasMatch(cleanOcr)) {
+          return MedicineModel.fromDbMap(row);
+        }
       }
     }
     return null;

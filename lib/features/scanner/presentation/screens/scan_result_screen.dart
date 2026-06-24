@@ -510,7 +510,7 @@ class _ScanResultScreenState extends State<ScanResultScreen>
             ),
             const SizedBox(width: 10),
             const Text(
-              "সস্তা বিকল্প ওষুধ",
+              "বিকল্প ওষুধ",
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.bold,

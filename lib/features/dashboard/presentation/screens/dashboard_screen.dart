@@ -2,13 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:medicine_guide_ai/core/constants/constants.dart';
-import 'package:medicine_guide_ai/core/theme/theme.dart';
 import 'package:medicine_guide_ai/core/services/database_helper.dart';
 import 'package:medicine_guide_ai/core/services/gemini_service.dart';
+import 'package:medicine_guide_ai/core/services/notification_service.dart';
 import 'package:medicine_guide_ai/core/services/ocr_service.dart';
 import 'package:medicine_guide_ai/core/services/tts_service.dart';
+import 'package:medicine_guide_ai/core/theme/theme.dart';
 import 'package:medicine_guide_ai/features/dashboard/presentation/bloc/navigation_bloc.dart';
 import 'package:medicine_guide_ai/features/prescription/presentation/screens/prescription_scan_screen.dart';
+import 'package:medicine_guide_ai/features/reminder/data/repositories/reminder_repository_impl.dart';
+import 'package:medicine_guide_ai/features/reminder/presentation/bloc/reminder_bloc.dart';
+import 'package:medicine_guide_ai/features/reminder/presentation/bloc/reminder_event.dart';
+import 'package:medicine_guide_ai/features/reminder/presentation/screens/reminder_screen.dart';
 import 'package:medicine_guide_ai/features/scanner/data/datasources/medicine_local_datasource.dart';
 import 'package:medicine_guide_ai/features/scanner/data/datasources/medicine_remote_datasource.dart';
 import 'package:medicine_guide_ai/features/scanner/data/repositories/medicine_repository_impl.dart';
@@ -20,22 +25,78 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<NavigationBloc, NavigationState>(
-      builder: (context, state) {
-        return Scaffold(
-          backgroundColor: AppTheme.darkBg,
-          body: IndexedStack(
-            index: state.currentIndex,
-            children: [
-              _buildHomeView(context),
-              _buildPlaceholderView(AppConstants.pillReminder, Icons.alarm_rounded, AppTheme.accentTeal),
-              _buildPlaceholderView(AppConstants.medicalDiary, Icons.history_edu_rounded, AppTheme.accentIndigo),
-              _buildPlaceholderView("সেটিংস", Icons.settings_rounded, AppTheme.textSecondary),
-            ],
+    return BlocProvider(
+      create: (_) => ReminderBloc(
+        ReminderRepositoryImpl(
+          DatabaseHelper.instance,
+          NotificationService.instance,
+        ),
+      )..add(LoadRemindersEvent()),
+      child: BlocBuilder<NavigationBloc, NavigationState>(
+        builder: (context, state) {
+          return Scaffold(
+            backgroundColor: AppTheme.darkBg,
+            appBar: _buildAppBar(state.currentIndex),
+            body: IndexedStack(
+              index: state.currentIndex,
+              children: [
+                _buildHomeView(context),
+                const ReminderScreen(),
+                _buildPlaceholderView(
+                  AppConstants.medicalDiary,
+                  Icons.history_edu_rounded,
+                  AppTheme.accentIndigo,
+                ),
+                _buildPlaceholderView(
+                  'সেটিংস',
+                  Icons.settings_rounded,
+                  AppTheme.textSecondary,
+                ),
+              ],
+            ),
+            bottomNavigationBar: _buildBottomNav(context, state.currentIndex),
+          );
+        },
+      ),
+    );
+  }
+
+  AppBar _buildAppBar(int currentIndex) {
+    final titles = [
+      AppConstants.appName,
+      AppConstants.pillReminder,
+      AppConstants.medicalDiary,
+      'সেটিংস',
+    ];
+    return AppBar(
+      backgroundColor: AppTheme.darkBg,
+      elevation: 0,
+      centerTitle: true,
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [AppTheme.accentTeal, AppTheme.accentIndigo],
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.medication_rounded, color: Colors.white, size: 16),
           ),
-          bottomNavigationBar: _buildBottomNav(context, state.currentIndex),
-        );
-      },
+          const SizedBox(width: 10),
+          Text(
+            titles[currentIndex],
+            style: const TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textPrimary,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -58,10 +119,10 @@ class DashboardScreen extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(context, 0, currentIndex, Icons.home_rounded, "হোম"),
-              _buildNavItem(context, 1, currentIndex, Icons.alarm_rounded, "রিমাইন্ডার"),
-              _buildNavItem(context, 2, currentIndex, Icons.history_edu_rounded, "হিস্ট্রি"),
-              _buildNavItem(context, 3, currentIndex, Icons.settings_rounded, "সেটিংস"),
+              _buildNavItem(context, 0, currentIndex, Icons.home_rounded, 'হোম'),
+              _buildNavItem(context, 1, currentIndex, Icons.alarm_rounded, 'রিমাইন্ডার'),
+              _buildNavItem(context, 2, currentIndex, Icons.history_edu_rounded, 'হিস্ট্রি'),
+              _buildNavItem(context, 3, currentIndex, Icons.settings_rounded, 'সেটিংস'),
             ],
           ),
         ),
@@ -110,65 +171,22 @@ class DashboardScreen extends StatelessWidget {
   }
 
   Widget _buildHomeView(BuildContext context) {
-    return CustomScrollView(
-      slivers: [
-        _buildSliverAppBar(),
-        SliverPadding(
-          padding: const EdgeInsets.all(16),
-          sliver: SliverList(
-            delegate: SliverChildListDelegate([
-              _buildWelcomeBanner(),
-              const SizedBox(height: 24),
-              _buildSectionHeader("দ্রুত অ্যাক্সেস"),
-              const SizedBox(height: 14),
-              _buildFeatureGrid(context),
-              const SizedBox(height: 24),
-              _buildSectionHeader("কিভাবে ব্যবহার করবেন"),
-              const SizedBox(height: 14),
-              _buildHowToUse(),
-              const SizedBox(height: 20),
-              _buildDisclaimer(),
-              const SizedBox(height: 16),
-            ]),
-          ),
-        ),
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        _buildWelcomeBanner(),
+        const SizedBox(height: 24),
+        _buildSectionHeader('দ্রুত অ্যাক্সেস'),
+        const SizedBox(height: 14),
+        _buildFeatureGrid(context),
+        const SizedBox(height: 24),
+        _buildSectionHeader('কিভাবে ব্যবহার করবেন'),
+        const SizedBox(height: 14),
+        _buildHowToUse(),
+        const SizedBox(height: 20),
+        _buildDisclaimer(),
+        const SizedBox(height: 16),
       ],
-    );
-  }
-
-  Widget _buildSliverAppBar() {
-    return SliverAppBar(
-      expandedHeight: 0,
-      floating: true,
-      snap: true,
-      backgroundColor: AppTheme.darkBg,
-      elevation: 0,
-      centerTitle: true,
-      title: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppTheme.accentTeal, AppTheme.accentIndigo],
-              ),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(Icons.medication_rounded, color: Colors.white, size: 18),
-          ),
-          const SizedBox(width: 10),
-          const Text(
-            AppConstants.appName,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.textPrimary,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -195,50 +213,38 @@ class DashboardScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppTheme.accentTeal.withAlpha(40),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppTheme.accentTeal.withAlpha(80)),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppTheme.accentTeal.withAlpha(40),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppTheme.accentTeal.withAlpha(80)),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.auto_awesome_rounded, color: AppTheme.accentTeal, size: 12),
+                SizedBox(width: 5),
+                Text(
+                  'AI চালিত',
+                  style: TextStyle(
+                    color: AppTheme.accentTeal,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.auto_awesome_rounded, color: AppTheme.accentTeal, size: 12),
-                    SizedBox(width: 5),
-                    Text(
-                      "AI চালিত",
-                      style: TextStyle(
-                        color: AppTheme.accentTeal,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(height: 14),
           const Text(
-            "স্বাগতম! 👋",
-            style: TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
+            'স্বাগতম! 👋',
+            style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           const SizedBox(height: 6),
           const Text(
-            "ওষুধের পাতা স্ক্যান করুন অথবা প্রেসক্রিপশন আপলোড করে এআই নির্দেশিকা পান।",
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white70,
-              height: 1.5,
-            ),
+            'ওষুধের পাতা স্ক্যান করুন অথবা প্রেসক্রিপশন আপলোড করে এআই নির্দেশিকা পান।',
+            style: TextStyle(fontSize: 14, color: Colors.white70, height: 1.5),
           ),
         ],
       ),
@@ -274,35 +280,29 @@ class DashboardScreen extends StatelessWidget {
   }
 
   Widget _buildFeatureGrid(BuildContext context) {
-    return Column(
+    return Row(
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: _buildFeatureCard(
-                title: AppConstants.scanMedicine,
-                subtitle: "ক্যামেরা দিয়ে স্ক্যান করুন",
-                icon: Icons.document_scanner_rounded,
-                gradientColors: [const Color(0xFF00897B), const Color(0xFF00BFA5)],
-                onTap: () => _showScanBottomSheet(context),
-              ),
+        Expanded(
+          child: _buildFeatureCard(
+            title: AppConstants.scanMedicine,
+            subtitle: 'ক্যামেরা দিয়ে স্ক্যান করুন',
+            icon: Icons.document_scanner_rounded,
+            gradientColors: [const Color(0xFF00897B), const Color(0xFF00BFA5)],
+            onTap: () => _showScanBottomSheet(context),
+          ),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: _buildFeatureCard(
+            title: AppConstants.prescriptionReader,
+            subtitle: 'হাতের লেখা পড়ুন',
+            icon: Icons.description_rounded,
+            gradientColors: [const Color(0xFF3949AB), const Color(0xFF5C6BC0)],
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const PrescriptionScanScreen()),
             ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: _buildFeatureCard(
-                title: AppConstants.prescriptionReader,
-                subtitle: "হাতের লেখা পড়ুন",
-                icon: Icons.description_rounded,
-                gradientColors: [const Color(0xFF3949AB), const Color(0xFF5C6BC0)],
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const PrescriptionScanScreen(),
-                  ),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ],
     );
@@ -324,10 +324,7 @@ class DashboardScreen extends StatelessWidget {
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                gradientColors[0].withAlpha(40),
-                gradientColors[1].withAlpha(20),
-              ],
+              colors: [gradientColors[0].withAlpha(40), gradientColors[1].withAlpha(20)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -341,11 +338,7 @@ class DashboardScreen extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: gradientColors,
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                  gradient: LinearGradient(colors: gradientColors),
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [
                     BoxShadow(
@@ -369,10 +362,7 @@ class DashboardScreen extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 subtitle,
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: AppTheme.textSecondary,
-                ),
+                style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
               ),
             ],
           ),
@@ -383,9 +373,9 @@ class DashboardScreen extends StatelessWidget {
 
   Widget _buildHowToUse() {
     const steps = [
-      (Icons.camera_alt_rounded, "ছবি তুলুন", "ওষুধের পাতা বা প্রেসক্রিপশনের ছবি নিন"),
-      (Icons.auto_awesome_rounded, "এআই বিশ্লেষণ", "এআই স্বয়ংক্রিয়ভাবে তথ্য বের করে"),
-      (Icons.info_rounded, "ফলাফল দেখুন", "ওষুধের বিস্তারিত তথ্য বাংলায় পড়ুন"),
+      (Icons.camera_alt_rounded, 'ছবি তুলুন', 'ওষুধের পাতা বা প্রেসক্রিপশনের ছবি নিন'),
+      (Icons.auto_awesome_rounded, 'এআই বিশ্লেষণ', 'এআই স্বয়ংক্রিয়ভাবে তথ্য বের করে'),
+      (Icons.info_rounded, 'ফলাফল দেখুন', 'ওষুধের বিস্তারিত তথ্য বাংলায় পড়ুন'),
     ];
 
     return Container(
@@ -403,41 +393,22 @@ class DashboardScreen extends StatelessWidget {
             padding: EdgeInsets.only(bottom: i < steps.length - 1 ? 16 : 0),
             child: Row(
               children: [
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: AppTheme.accentTeal.withAlpha(20),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    Icon(icon, color: AppTheme.accentTeal, size: 22),
-                  ],
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: AppTheme.accentTeal.withAlpha(20),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, color: AppTheme.accentTeal, size: 22),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textPrimary,
-                          fontSize: 14,
-                        ),
-                      ),
-                      Text(
-                        desc,
-                        style: const TextStyle(
-                          color: AppTheme.textSecondary,
-                          fontSize: 12,
-                          height: 1.4,
-                        ),
-                      ),
+                      Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textPrimary, fontSize: 14)),
+                      Text(desc, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12, height: 1.4)),
                     ],
                   ),
                 ),
@@ -465,11 +436,7 @@ class DashboardScreen extends StatelessWidget {
           Expanded(
             child: Text(
               AppConstants.medicalDisclaimer,
-              style: TextStyle(
-                color: AppTheme.warningRed,
-                fontSize: 12,
-                height: 1.5,
-              ),
+              style: TextStyle(color: AppTheme.warningRed, fontSize: 12, height: 1.5),
             ),
           ),
         ],
@@ -481,7 +448,7 @@ class DashboardScreen extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (sheetContext) {
+      builder: (sheetCtx) {
         return Container(
           decoration: const BoxDecoration(
             color: AppTheme.cardBg,
@@ -503,42 +470,17 @@ class DashboardScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   const Text(
-                    "ওষুধ স্ক্যান করুন",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimary,
-                    ),
+                    'ওষুধ স্ক্যান করুন',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
                   ),
                   const SizedBox(height: 6),
-                  const Text(
-                    "ছবির উৎস নির্বাচন করুন",
-                    style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
-                  ),
+                  const Text('ছবির উৎস নির্বাচন করুন', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
                   const SizedBox(height: 24),
                   Row(
                     children: [
-                      Expanded(
-                        child: _buildSheetOption(
-                          context: context,
-                          sheetContext: sheetContext,
-                          label: "ক্যামেরা",
-                          icon: Icons.camera_alt_rounded,
-                          source: ImageSource.camera,
-                          color: AppTheme.accentTeal,
-                        ),
-                      ),
+                      Expanded(child: _buildSheetOption(context, sheetCtx, 'ক্যামেরা', Icons.camera_alt_rounded, ImageSource.camera, AppTheme.accentTeal)),
                       const SizedBox(width: 14),
-                      Expanded(
-                        child: _buildSheetOption(
-                          context: context,
-                          sheetContext: sheetContext,
-                          label: "গ্যালারি",
-                          icon: Icons.photo_library_rounded,
-                          source: ImageSource.gallery,
-                          color: AppTheme.accentIndigo,
-                        ),
-                      ),
+                      Expanded(child: _buildSheetOption(context, sheetCtx, 'গ্যালারি', Icons.photo_library_rounded, ImageSource.gallery, AppTheme.accentIndigo)),
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -551,35 +493,31 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSheetOption({
-    required BuildContext context,
-    required BuildContext sheetContext,
-    required String label,
-    required IconData icon,
-    required ImageSource source,
-    required Color color,
-  }) {
+  Widget _buildSheetOption(
+    BuildContext context,
+    BuildContext sheetCtx,
+    String label,
+    IconData icon,
+    ImageSource source,
+    Color color,
+  ) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () async {
-          Navigator.pop(sheetContext);
+          Navigator.pop(sheetCtx);
           final picker = ImagePicker();
           final image = await picker.pickImage(source: source, imageQuality: 90);
           if (image != null && context.mounted) {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (routeContext) => BlocProvider(
-                  create: (blocContext) => MedicineBloc(
+                builder: (routeCtx) => BlocProvider(
+                  create: (_) => MedicineBloc(
                     repository: MedicineRepositoryImpl(
                       ocrService: OcrService(),
-                      localDataSource: MedicineLocalDataSourceImpl(
-                        DatabaseHelper.instance,
-                      ),
-                      remoteDataSource: MedicineRemoteDataSourceImpl(
-                        GeminiService(),
-                      ),
+                      localDataSource: MedicineLocalDataSourceImpl(DatabaseHelper.instance),
+                      remoteDataSource: MedicineRemoteDataSourceImpl(GeminiService()),
                     ),
                     ttsService: TtsService(),
                   ),
@@ -601,14 +539,7 @@ class DashboardScreen extends StatelessWidget {
             children: [
               Icon(icon, color: color, size: 32),
               const SizedBox(height: 8),
-              Text(
-                label,
-                style: TextStyle(
-                  color: color,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14,
-                ),
-              ),
+              Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 14)),
             ],
           ),
         ),
@@ -632,14 +563,7 @@ class DashboardScreen extends StatelessWidget {
             child: Icon(icon, size: 44, color: color),
           ),
           const SizedBox(height: 20),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.textPrimary,
-            ),
-          ),
+          Text(title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
           const SizedBox(height: 10),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -648,10 +572,7 @@ class DashboardScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: color.withAlpha(50)),
             ),
-            child: const Text(
-              "শীঘ্রই আসছে...",
-              style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
-            ),
+            child: const Text('শীঘ্রই আসছে...', style: TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
           ),
         ],
       ),
