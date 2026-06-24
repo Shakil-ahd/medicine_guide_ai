@@ -20,7 +20,7 @@ class DatabaseHelper {
     final path = join(dbPath, filePath);
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -61,6 +61,13 @@ class DatabaseHelper {
         isOffline INTEGER
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS settings (
+        key TEXT PRIMARY KEY,
+        value TEXT
+      )
+    ''');
   }
 
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
@@ -81,6 +88,14 @@ class DatabaseHelper {
           medicineName TEXT,
           scannedAt TEXT,
           isOffline INTEGER
+        )
+      ''');
+    }
+    if (oldVersion < 3) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS settings (
+          key TEXT PRIMARY KEY,
+          value TEXT
         )
       ''');
     }
@@ -226,6 +241,29 @@ class DatabaseHelper {
         conflictAlgorithm: ConflictAlgorithm.ignore,
       );
     }
+  }
+
+  Future<void> saveSetting(String key, String value) async {
+    final db = await instance.database;
+    await db.insert(
+      'settings',
+      {'key': key, 'value': value},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<String?> getSetting(String key) async {
+    final db = await instance.database;
+    final results = await db.query(
+      'settings',
+      columns: ['value'],
+      where: 'key = ?',
+      whereArgs: [key],
+    );
+    if (results.isNotEmpty) {
+      return results.first['value'] as String?;
+    }
+    return null;
   }
 
   Future<void> close() async {

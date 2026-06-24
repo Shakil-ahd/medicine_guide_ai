@@ -246,7 +246,7 @@ class PrescriptionResultScreen extends StatelessWidget {
                 _buildInfoRow(
                   Icons.medication_rounded,
                   'ডোজ',
-                  medicine.dosage,
+                  _formatDosage(medicine.dosage),
                   AppTheme.accentIndigo,
                 ),
                 const SizedBox(height: 10),
@@ -262,6 +262,88 @@ class PrescriptionResultScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  static String _formatDosage(String rawDosage) {
+    if (rawDosage.isEmpty) return 'তথ্য পাওয়া যায়নি';
+    
+    // If it already has explanatory text, don't double format
+    if (rawDosage.contains('(') || rawDosage.contains('সকালে') || rawDosage.contains('রাতে')) {
+      return rawDosage;
+    }
+
+    // Normalize string: replace symbols with '-'
+    var normalized = rawDosage
+        .replaceAll('+', '-')
+        .replaceAll(',', '-')
+        .replaceAll('/', '-')
+        .replaceAll(' ', '');
+        
+    // Translate Bengali numerals to English to parse safely
+    normalized = normalized
+        .replaceAll('১', '1')
+        .replaceAll('২', '2')
+        .replaceAll('৩', '3')
+        .replaceAll('৪', '4')
+        .replaceAll('৫', '5')
+        .replaceAll('৬', '6')
+        .replaceAll('৭', '7')
+        .replaceAll('৮', '8')
+        .replaceAll('৯', '9')
+        .replaceAll('০', '0');
+
+    final parts = normalized.split('-');
+    if (parts.length >= 2 && parts.length <= 4 && parts.every((p) => RegExp(r'^\d+$').hasMatch(p))) {
+      final ints = parts.map(int.parse).toList();
+      
+      String toBanglaDigit(String engDigit) {
+        return engDigit
+            .replaceAll('1', '১')
+            .replaceAll('2', '২')
+            .replaceAll('3', '৩')
+            .replaceAll('4', '৪')
+            .replaceAll('5', '৫')
+            .replaceAll('6', '৬')
+            .replaceAll('7', '৭')
+            .replaceAll('8', '৮')
+            .replaceAll('9', '৯')
+            .replaceAll('0', '০');
+      }
+
+      final banglaParts = <String>[];
+      
+      if (ints.length == 2) {
+        // e.g. 1-1 or 1-0
+        if (ints[0] > 0) banglaParts.add('সকালে ${toBanglaDigit(parts[0])}টি');
+        if (ints[1] > 0) banglaParts.add('রাতে ${toBanglaDigit(parts[1])}টি');
+      } else if (ints.length == 3) {
+        // e.g. 1-0-1
+        if (ints[0] > 0) banglaParts.add('সকালে ${toBanglaDigit(parts[0])}টি');
+        if (ints[1] > 0) banglaParts.add('দুপুরে ${toBanglaDigit(parts[1])}টি');
+        if (ints[2] > 0) banglaParts.add('রাতে ${toBanglaDigit(parts[2])}টি');
+      } else if (ints.length == 4) {
+        // e.g. 1-1-1-1
+        if (ints[0] > 0) banglaParts.add('সকালে ${toBanglaDigit(parts[0])}টি');
+        if (ints[1] > 0) banglaParts.add('দুপুরে ${toBanglaDigit(parts[1])}টি');
+        if (ints[2] > 0) banglaParts.add('বিকালে ${toBanglaDigit(parts[2])}টি');
+        if (ints[3] > 0) banglaParts.add('রাতে ${toBanglaDigit(parts[3])}টি');
+      }
+      
+      if (banglaParts.isNotEmpty) {
+        String partsText = '';
+        if (banglaParts.length == 1) {
+          partsText = banglaParts.first;
+        } else if (banglaParts.length == 2) {
+          partsText = '${banglaParts[0]} ও ${banglaParts[1]}';
+        } else if (banglaParts.length == 3) {
+          partsText = '${banglaParts[0]}, ${banglaParts[1]} ও ${banglaParts[2]}';
+        } else if (banglaParts.length == 4) {
+          partsText = '${banglaParts[0]}, ${banglaParts[1]}, ${banglaParts[2]} ও ${banglaParts[3]}';
+        }
+        return '$rawDosage ($partsText করে)';
+      }
+    }
+    return rawDosage;
   }
 
   Widget _buildInfoRow(

@@ -10,26 +10,39 @@ import 'package:medicine_guide_ai/features/reminder/presentation/screens/add_rem
 class ReminderScreen extends StatelessWidget {
   const ReminderScreen({super.key});
 
-  static const _dayLabels = ['সোম', 'মঙ্গল', 'বুধ', 'বৃহ', 'শুক্র', 'শনি', 'রবি'];
+  static const _dayLabels = [
+    'সোম',
+    'মঙ্গল',
+    'বুধ',
+    'বৃহ',
+    'শুক্র',
+    'শনি',
+    'রবি',
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.darkBg,
-      appBar: AppBar(
-        title: const Text('মেডিসিন রিমাইন্ডার'),
-        backgroundColor: AppTheme.darkBg,
-        elevation: 0,
-        centerTitle: true,
-      ),
+      // appBar: AppBar(
+      //   title: const Text('মেডিসিন রিমাইন্ডার'),
+      //   backgroundColor: AppTheme.darkBg,
+      //   elevation: 0,
+      //   centerTitle: true,
+      // ),
       body: BlocBuilder<ReminderBloc, ReminderState>(
         builder: (context, state) {
           if (state is ReminderLoading) {
-            return const Center(child: CircularProgressIndicator(color: AppTheme.accentTeal));
+            return const Center(
+              child: CircularProgressIndicator(color: AppTheme.accentTeal),
+            );
           }
           if (state is ReminderError) {
             return Center(
-              child: Text(state.message, style: const TextStyle(color: AppTheme.warningRed)),
+              child: Text(
+                state.message,
+                style: const TextStyle(color: AppTheme.warningRed),
+              ),
             );
           }
           if (state is ReminderLoaded) {
@@ -43,7 +56,10 @@ class ReminderScreen extends StatelessWidget {
         onPressed: () => _openAdd(context),
         backgroundColor: AppTheme.accentTeal,
         icon: const Icon(Icons.alarm_add_rounded, color: Colors.white),
-        label: const Text('নতুন রিমাইন্ডার', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        label: const Text(
+          'নতুন রিমাইন্ডার',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }
@@ -61,12 +77,20 @@ class ReminderScreen extends StatelessWidget {
               shape: BoxShape.circle,
               border: Border.all(color: AppTheme.accentTeal.withAlpha(60)),
             ),
-            child: const Icon(Icons.medication_rounded, size: 44, color: AppTheme.accentTeal),
+            child: const Icon(
+              Icons.medication_rounded,
+              size: 44,
+              color: AppTheme.accentTeal,
+            ),
           ),
           const SizedBox(height: 20),
           const Text(
             'কোনো রিমাইন্ডার নেই',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textPrimary,
+            ),
           ),
           const SizedBox(height: 8),
           const Text(
@@ -83,7 +107,9 @@ class ReminderScreen extends StatelessWidget {
               backgroundColor: AppTheme.accentTeal,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           ),
         ],
@@ -127,7 +153,11 @@ class ReminderScreen extends StatelessWidget {
         const SizedBox(width: 10),
         Text(
           title,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textSecondary),
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: AppTheme.textSecondary,
+          ),
         ),
         const SizedBox(width: 8),
         Container(
@@ -138,7 +168,11 @@ class ReminderScreen extends StatelessWidget {
           ),
           child: Text(
             '$count',
-            style: const TextStyle(fontSize: 12, color: AppTheme.accentTeal, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppTheme.accentTeal,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ],
@@ -165,7 +199,8 @@ class ReminderScreen extends StatelessWidget {
     if (days.length == 7) {
       return 'প্রতিদিন';
     }
-    final isWeekdays = days.length == 5 &&
+    final isWeekdays =
+        days.length == 5 &&
         days.contains(1) &&
         days.contains(2) &&
         days.contains(3) &&
@@ -216,7 +251,7 @@ class ReminderScreen extends StatelessWidget {
                     color: AppTheme.accentTeal.withAlpha(10),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
-                  )
+                  ),
                 ]
               : null,
         ),
@@ -238,7 +273,9 @@ class ReminderScreen extends StatelessWidget {
                   ),
                   child: Icon(
                     Icons.medication_rounded,
-                    color: reminder.isActive ? AppTheme.accentTeal : AppTheme.textSecondary,
+                    color: reminder.isActive
+                        ? AppTheme.accentTeal
+                        : AppTheme.textSecondary,
                     size: 22,
                   ),
                 ),
@@ -252,14 +289,19 @@ class ReminderScreen extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: reminder.isActive ? AppTheme.textPrimary : AppTheme.textSecondary,
+                          color: reminder.isActive
+                              ? AppTheme.textPrimary
+                              : AppTheme.textSecondary,
                         ),
                       ),
                       if (reminder.doseDescription.isNotEmpty) ...[
                         const SizedBox(height: 2),
                         Text(
                           reminder.doseDescription,
-                          style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppTheme.textSecondary,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -270,7 +312,9 @@ class ReminderScreen extends StatelessWidget {
                           Icon(
                             Icons.access_time_rounded,
                             size: 13,
-                            color: reminder.isActive ? AppTheme.accentTeal.withAlpha(180) : AppTheme.textSecondary,
+                            color: reminder.isActive
+                                ? AppTheme.accentTeal.withAlpha(180)
+                                : AppTheme.textSecondary,
                           ),
                           const SizedBox(width: 4),
                           Text(
@@ -278,21 +322,29 @@ class ReminderScreen extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
-                              color: reminder.isActive ? AppTheme.accentTeal : AppTheme.textSecondary,
+                              color: reminder.isActive
+                                  ? AppTheme.accentTeal
+                                  : AppTheme.textSecondary,
                             ),
                           ),
                           const SizedBox(width: 12),
                           Icon(
                             Icons.calendar_today_rounded,
                             size: 12,
-                            color: reminder.isActive ? AppTheme.accentIndigo : AppTheme.textSecondary,
+                            color: reminder.isActive
+                                ? AppTheme.accentIndigo
+                                : AppTheme.textSecondary,
                           ),
                           const SizedBox(width: 4),
-                          Text(
-                            _formatDays(reminder.daysOfWeek),
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: AppTheme.textSecondary,
+                          Expanded(
+                            child: Text(
+                              _formatDays(reminder.daysOfWeek),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppTheme.textSecondary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
@@ -309,8 +361,8 @@ class ReminderScreen extends StatelessWidget {
                       onChanged: (val) {
                         if (reminder.id != null) {
                           context.read<ReminderBloc>().add(
-                                ToggleReminderEvent(reminder.id!, val),
-                              );
+                            ToggleReminderEvent(reminder.id!, val),
+                          );
                         }
                       },
                     ),
@@ -326,8 +378,8 @@ class ReminderScreen extends StatelessWidget {
                       onPressed: () {
                         if (reminder.id != null) {
                           context.read<ReminderBloc>().add(
-                                DeleteReminderEvent(reminder.id!),
-                              );
+                            DeleteReminderEvent(reminder.id!),
+                          );
                         }
                       },
                     ),

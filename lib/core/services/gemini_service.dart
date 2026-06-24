@@ -134,7 +134,8 @@ class GeminiService {
         'You are a medical AI assistant. Read this handwritten prescription image carefully.\n'
         'Extract all medicines listed. Return ONLY a valid JSON array (no markdown) with this structure:\n'
         '[{"name":"medicine name","purpose":"কেন খেতে হবে বাংলায়",'
-        '"dosage":"কীভাবে খেতে হবে বাংলায়","duration":"কতদিন বাংলায়"}]';
+        '"dosage":"কীভাবে খেতে হবে বাংলায় (যেমন: ১+০+১ (সকালে ও রাতে ১টি করে))",'
+        '"duration":"কতদিন বাংলায়"}]';
 
     final mimeType = _getMimeType(imagePath);
 

@@ -19,19 +19,34 @@ import 'package:medicine_guide_ai/features/scanner/data/datasources/medicine_rem
 import 'package:medicine_guide_ai/features/scanner/data/repositories/medicine_repository_impl.dart';
 import 'package:medicine_guide_ai/features/scanner/presentation/bloc/medicine_bloc.dart';
 import 'package:medicine_guide_ai/features/scanner/presentation/screens/scan_result_screen.dart';
+import 'package:medicine_guide_ai/features/history/data/repositories/history_repository_impl.dart';
+import 'package:medicine_guide_ai/features/history/presentation/bloc/history_bloc.dart';
+import 'package:medicine_guide_ai/features/history/presentation/bloc/history_event.dart';
+import 'package:medicine_guide_ai/features/history/presentation/screens/medical_diary_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => ReminderBloc(
-        ReminderRepositoryImpl(
-          DatabaseHelper.instance,
-          NotificationService.instance,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<ReminderBloc>(
+          create: (_) => ReminderBloc(
+            ReminderRepositoryImpl(
+              DatabaseHelper.instance,
+              NotificationService.instance,
+            ),
+          )..add(LoadRemindersEvent()),
         ),
-      )..add(LoadRemindersEvent()),
+        BlocProvider<HistoryBloc>(
+          create: (_) => HistoryBloc(
+            HistoryRepositoryImpl(
+              DatabaseHelper.instance,
+            ),
+          )..add(LoadHistoryEvent()),
+        ),
+      ],
       child: BlocBuilder<NavigationBloc, NavigationState>(
         builder: (context, state) {
           return Scaffold(
@@ -42,11 +57,7 @@ class DashboardScreen extends StatelessWidget {
               children: [
                 _buildHomeView(context),
                 const ReminderScreen(),
-                _buildPlaceholderView(
-                  AppConstants.medicalDiary,
-                  Icons.history_edu_rounded,
-                  AppTheme.accentIndigo,
-                ),
+                const MedicalDiaryScreen(),
                 _buildPlaceholderView(
                   'সেটিংস',
                   Icons.settings_rounded,
