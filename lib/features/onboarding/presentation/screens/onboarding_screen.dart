@@ -75,7 +75,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         const SizedBox(height: 30),
-                        // Premium Logo with Glow
                         Container(
                           width: 90,
                           height: 90,
@@ -101,7 +100,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ),
                         ),
                         const SizedBox(height: 20),
-                        // App Title
                         const Text(
                           'মেডিসিন গাইড এআই',
                           style: TextStyle(
@@ -120,7 +118,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ),
                         ),
                         const SizedBox(height: 35),
-                        // Features section
                         _buildFeatureRow(
                           Icons.qr_code_scanner_rounded,
                           AppTheme.accentTeal,
@@ -142,7 +139,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           'সময়মতো ওষুধ খাওয়ার জন্য সহজে রিমাইন্ডার সেট করুন এবং নোটিফিকেশন পান।',
                         ),
                         const SizedBox(height: 35),
-                        // Disclaimer Card
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
@@ -192,11 +188,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     ),
                   ),
                 ),
-                // Footer Controls
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Accept Checkbox
                     InkWell(
                       onTap: () {
                         setState(() {
@@ -240,7 +234,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    // Start Button
                     SizedBox(
                       width: double.infinity,
                       height: 52,

@@ -23,6 +23,7 @@ import 'package:medicine_guide_ai/features/history/data/repositories/history_rep
 import 'package:medicine_guide_ai/features/history/presentation/bloc/history_bloc.dart';
 import 'package:medicine_guide_ai/features/history/presentation/bloc/history_event.dart';
 import 'package:medicine_guide_ai/features/history/presentation/screens/medical_diary_screen.dart';
+import 'package:medicine_guide_ai/features/settings/presentation/screens/settings_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -58,11 +59,7 @@ class DashboardScreen extends StatelessWidget {
                 _buildHomeView(context),
                 const ReminderScreen(),
                 const MedicalDiaryScreen(),
-                _buildPlaceholderView(
-                  'সেটিংস',
-                  Icons.settings_rounded,
-                  AppTheme.textSecondary,
-                ),
+                const SettingsScreen(),
               ],
             ),
             bottomNavigationBar: _buildBottomNav(context, state.currentIndex),
@@ -554,38 +551,6 @@ class DashboardScreen extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildPlaceholderView(String title, IconData icon, Color color) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 90,
-            height: 90,
-            decoration: BoxDecoration(
-              color: color.withAlpha(20),
-              shape: BoxShape.circle,
-              border: Border.all(color: color.withAlpha(60)),
-            ),
-            child: Icon(icon, size: 44, color: color),
-          ),
-          const SizedBox(height: 20),
-          Text(title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
-          const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: color.withAlpha(15),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: color.withAlpha(50)),
-            ),
-            child: const Text('শীঘ্রই আসছে...', style: TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
-          ),
-        ],
       ),
     );
   }

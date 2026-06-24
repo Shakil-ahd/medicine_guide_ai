@@ -105,6 +105,12 @@ class NotificationService {
     }
   }
 
+  Future<void> cancelAll() async {
+    try {
+      await _notifications.cancelAll();
+    } catch (_) {}
+  }
+
   tz.TZDateTime _nextInstanceOfDay(int hour, int minute, int dayOfWeek) {
     final now = tz.TZDateTime.now(tz.local);
     var scheduled = tz.TZDateTime(

@@ -25,18 +25,28 @@ class _MedicalDiaryScreenState extends State<MedicalDiaryScreen> {
 
   String _formatDate(DateTime dt) {
     final months = [
-      'জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
-      'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'
+      'জানুয়ারি',
+      'ফেব্রুয়ারি',
+      'মার্চ',
+      'এপ্রিল',
+      'মে',
+      'জুন',
+      'জুলাই',
+      'আগস্ট',
+      'সেপ্টেম্বর',
+      'অক্টোবর',
+      'নভেম্বর',
+      'ডিসেম্বর',
     ];
     final dayStr = _toBanglaDigit(dt.day.toString());
     final monthStr = months[dt.month - 1];
     final yearStr = _toBanglaDigit(dt.year.toString());
-    
+
     final hour = dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour);
     final amPm = dt.hour >= 12 ? 'রাত/বিকাল' : 'সকাল/দুপুর';
     final minuteStr = _toBanglaDigit(dt.minute.toString().padLeft(2, '0'));
     final hourStr = _toBanglaDigit(hour.toString().padLeft(2, '0'));
-    
+
     return '$dayStr $monthStr $yearStr, $amPm $hourStr:$minuteStr';
   }
 
@@ -71,65 +81,23 @@ class _MedicalDiaryScreenState extends State<MedicalDiaryScreen> {
     }
   }
 
-  void _confirmClearHistory(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (dialogCtx) => AlertDialog(
-        backgroundColor: AppTheme.cardBg,
-        title: const Text('হিস্ট্রি মুছুন'),
-        content: const Text(
-          'আপনি কি সব স্ক্যান করা ওষুধের হিস্ট্রি মুছে ফেলতে চান? এটি আর ফিরিয়ে আনা যাবে না।',
-          style: TextStyle(color: AppTheme.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogCtx),
-            child: const Text('বাতিল', style: TextStyle(color: AppTheme.textSecondary)),
-          ),
-          TextButton(
-            onPressed: () {
-              context.read<HistoryBloc>().add(ClearHistoryEvent());
-              Navigator.pop(dialogCtx);
-            },
-            child: const Text('মুছে ফেলুন', style: TextStyle(color: AppTheme.warningRed)),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.darkBg,
-      appBar: AppBar(
-        title: const Text('মেডিকেল হিস্ট্রি'),
-        backgroundColor: AppTheme.darkBg,
-        elevation: 0,
-        centerTitle: true,
-        actions: [
-          BlocBuilder<HistoryBloc, HistoryState>(
-            builder: (context, state) {
-              if (state is HistoryLoaded && state.history.isNotEmpty) {
-                return IconButton(
-                  icon: const Icon(Icons.delete_sweep_rounded, color: AppTheme.warningRed),
-                  onPressed: () => _confirmClearHistory(context),
-                  tooltip: 'সব মুছুন',
-                );
-              }
-              return const SizedBox.shrink();
-            },
-          ),
-        ],
-      ),
       body: BlocBuilder<HistoryBloc, HistoryState>(
         builder: (context, state) {
           if (state is HistoryLoading) {
-            return const Center(child: CircularProgressIndicator(color: AppTheme.accentIndigo));
+            return const Center(
+              child: CircularProgressIndicator(color: AppTheme.accentIndigo),
+            );
           }
           if (state is HistoryError) {
             return Center(
-              child: Text(state.message, style: const TextStyle(color: AppTheme.warningRed)),
+              child: Text(
+                state.message,
+                style: const TextStyle(color: AppTheme.warningRed),
+              ),
             );
           }
           if (state is HistoryLoaded) {
@@ -155,12 +123,20 @@ class _MedicalDiaryScreenState extends State<MedicalDiaryScreen> {
               shape: BoxShape.circle,
               border: Border.all(color: AppTheme.accentIndigo.withAlpha(60)),
             ),
-            child: const Icon(Icons.history_edu_rounded, size: 44, color: AppTheme.accentIndigo),
+            child: const Icon(
+              Icons.history_edu_rounded,
+              size: 44,
+              color: AppTheme.accentIndigo,
+            ),
           ),
           const SizedBox(height: 20),
           const Text(
             'কোনো হিস্ট্রি নেই',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textPrimary,
+            ),
           ),
           const SizedBox(height: 8),
           const Text(
@@ -203,8 +179,12 @@ class _MedicalDiaryScreenState extends State<MedicalDiaryScreen> {
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      entry.isOffline ? Icons.offline_pin_rounded : Icons.cloud_done_rounded,
-                      color: entry.isOffline ? AppTheme.accentTeal : AppTheme.accentIndigo,
+                      entry.isOffline
+                          ? Icons.offline_pin_rounded
+                          : Icons.cloud_done_rounded,
+                      color: entry.isOffline
+                          ? AppTheme.accentTeal
+                          : AppTheme.accentIndigo,
                       size: 22,
                     ),
                   ),
@@ -226,7 +206,11 @@ class _MedicalDiaryScreenState extends State<MedicalDiaryScreen> {
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            const Icon(Icons.access_time_rounded, size: 12, color: AppTheme.textSecondary),
+                            const Icon(
+                              Icons.access_time_rounded,
+                              size: 12,
+                              color: AppTheme.textSecondary,
+                            ),
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
@@ -248,7 +232,10 @@ class _MedicalDiaryScreenState extends State<MedicalDiaryScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: entry.isOffline
                               ? AppTheme.accentTeal.withAlpha(20)
@@ -259,7 +246,9 @@ class _MedicalDiaryScreenState extends State<MedicalDiaryScreen> {
                           entry.isOffline ? 'অফলাইন' : 'এআই',
                           style: TextStyle(
                             fontSize: 10,
-                            color: entry.isOffline ? AppTheme.accentTeal : AppTheme.accentIndigo,
+                            color: entry.isOffline
+                                ? AppTheme.accentTeal
+                                : AppTheme.accentIndigo,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -268,10 +257,16 @@ class _MedicalDiaryScreenState extends State<MedicalDiaryScreen> {
                       IconButton(
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
-                        icon: const Icon(Icons.delete_outline_rounded, color: AppTheme.warningRed, size: 22),
+                        icon: const Icon(
+                          Icons.delete_outline_rounded,
+                          color: AppTheme.warningRed,
+                          size: 22,
+                        ),
                         onPressed: () {
                           if (entry.id != null) {
-                            context.read<HistoryBloc>().add(DeleteHistoryItemEvent(entry.id!));
+                            context.read<HistoryBloc>().add(
+                              DeleteHistoryItemEvent(entry.id!),
+                            );
                           }
                         },
                       ),

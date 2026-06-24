@@ -11,7 +11,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await NotificationService.instance.init();
   
-  // Check onboarding status from SQLite Database
   final onboardingCompleted = await DatabaseHelper.instance.getSetting('onboarding_completed') == 'true';
   
   runApp(MyApp(onboardingCompleted: onboardingCompleted));
