@@ -15,16 +15,34 @@ class ScanResultScreen extends StatefulWidget {
   State<ScanResultScreen> createState() => _ScanResultScreenState();
 }
 
-class _ScanResultScreenState extends State<ScanResultScreen> {
+class _ScanResultScreenState extends State<ScanResultScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+
   @override
   void initState() {
     super.initState();
+    _pulseController = AnimationController(
+      duration: const Duration(seconds: 1),
+      vsync: this,
+    )..repeat(reverse: true);
+    _pulseAnimation = Tween<double>(begin: 0.85, end: 1.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
     context.read<MedicineBloc>().add(ScanMedicineEvent(widget.imagePath));
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.darkBg,
       appBar: AppBar(
         title: const Text("স্ক্যান ফলাফল"),
         flexibleSpace: Container(
@@ -54,27 +72,61 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
 
   Widget _buildLoadingView() {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const CircularProgressIndicator(color: AppTheme.accentTeal),
-          const SizedBox(height: 20),
-          const Text(
-            "ওষুধের ছবি প্রসেস করা হচ্ছে...",
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.white70,
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ScaleTransition(
+              scale: _pulseAnimation,
+              child: Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: const LinearGradient(
+                    colors: [AppTheme.accentTeal, AppTheme.accentIndigo],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.accentTeal.withAlpha(80),
+                      blurRadius: 30,
+                      spreadRadius: 5,
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.document_scanner_rounded,
+                  color: Colors.white,
+                  size: 48,
+                ),
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            "অনুগ্রহ করে অপেক্ষা করুন",
-            style: TextStyle(
-              fontSize: 12,
-              color: AppTheme.textSecondary,
+            const SizedBox(height: 32),
+            const Text(
+              "এআই বিশ্লেষণ করছে...",
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimary,
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 12),
+            const Text(
+              "ওষুধের তথ্য সংগ্রহ করা হচ্ছে\nঅনুগ্রহ করে অপেক্ষা করুন",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: AppTheme.textSecondary,
+                height: 1.6,
+              ),
+            ),
+            const SizedBox(height: 32),
+            ClipRRectLoadingBar(),
+          ],
+        ),
       ),
     );
   }
@@ -82,35 +134,93 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
   Widget _buildErrorView(String message) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(28),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline_rounded, size: 64, color: AppTheme.warningRed),
-            const SizedBox(height: 16),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 16,
-                color: AppTheme.textPrimary,
+            Container(
+              width: 90,
+              height: 90,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppTheme.warningRed.withAlpha(20),
+                border: Border.all(
+                  color: AppTheme.warningRed.withAlpha(80),
+                  width: 2,
+                ),
+              ),
+              child: const Icon(
+                Icons.error_outline_rounded,
+                size: 48,
+                color: AppTheme.warningRed,
               ),
             ),
             const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () {
-                context.read<MedicineBloc>().add(ScanMedicineEvent(widget.imagePath));
-              },
-              icon: const Icon(Icons.refresh_rounded),
-              label: const Text("আবার চেষ্টা করুন"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.accentTeal,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            const Text(
+              "তথ্য পাওয়া যায়নি",
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimary,
               ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppTheme.warningRed.withAlpha(15),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.warningRed.withAlpha(60)),
+              ),
+              child: Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppTheme.textSecondary,
+                  height: 1.5,
+                ),
+              ),
+            ),
+            const SizedBox(height: 28),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.arrow_back_rounded),
+                    label: const Text("ফিরে যান"),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.textSecondary,
+                      side: const BorderSide(color: Color(0xFF263238)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      context
+                          .read<MedicineBloc>()
+                          .add(ScanMedicineEvent(widget.imagePath));
+                    },
+                    icon: const Icon(Icons.refresh_rounded),
+                    label: const Text("আবার চেষ্টা"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.accentTeal,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -119,206 +229,463 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
   }
 
   Widget _buildResultView(BuildContext context, Medicine medicine) {
-    final ttsText = "${medicine.name}. জেনেরিক নাম: ${medicine.genericName}. নির্দেশনা: ${medicine.indications}. সেবনমাত্রা: ${medicine.dosage}. খাওয়ার নিয়ম: ${medicine.instructions}";
+    final ttsText =
+        "${medicine.name}. জেনেরিক নাম: ${medicine.genericName}. "
+        "নির্দেশনা: ${medicine.indications}. সেবনমাত্রা: ${medicine.dosage}. "
+        "খাওয়ার নিয়ম: ${medicine.instructions}";
 
     return Column(
       children: [
         Expanded(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Center(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Image.file(
-                      File(widget.imagePath),
-                      height: 160,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
+                _buildImageCard(),
+                const SizedBox(height: 16),
+                _buildMedicineHeader(medicine),
+                const SizedBox(height: 16),
+                _buildTtsControls(context, ttsText),
                 const SizedBox(height: 20),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          medicine.name,
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.accentTeal,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          medicine.genericName,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: AppTheme.textPrimary,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          medicine.manufacturer,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: AppTheme.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                _buildInfoSection(
+                  "নির্দেশনা",
+                  medicine.indications,
+                  Icons.healing_rounded,
+                  AppTheme.accentTeal,
                 ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          context.read<MedicineBloc>().add(ReadMedicineTtsEvent(ttsText));
-                        },
-                        icon: const Icon(Icons.volume_up_rounded),
-                        label: const Text("পড়ে শোনান"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.accentIndigo,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    ElevatedButton(
-                      onPressed: () {
-                        context.read<MedicineBloc>().add(StopMedicineTtsEvent());
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.cardBg,
-                        foregroundColor: AppTheme.warningRed,
-                        side: const BorderSide(color: Color(0xFF263238)),
-                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Icon(Icons.volume_off_rounded),
-                    ),
-                  ],
+                const SizedBox(height: 12),
+                _buildInfoSection(
+                  "সেবনমাত্রা",
+                  medicine.dosage,
+                  Icons.medical_services_rounded,
+                  const Color(0xFF42A5F5),
                 ),
-                const SizedBox(height: 24),
-                _buildInfoSection("নির্দেশনা (Indications)", medicine.indications, Icons.healing_rounded, AppTheme.accentTeal),
-                const SizedBox(height: 16),
-                _buildInfoSection("সেবনমাত্রা (Dosage)", medicine.dosage, Icons.medical_services_rounded, AppTheme.accentTeal),
-                const SizedBox(height: 16),
-                _buildInfoSection("খাওয়ার নিয়ম (Instructions)", medicine.instructions, Icons.info_outline_rounded, AppTheme.accentTeal),
-                const SizedBox(height: 16),
-                _buildInfoSection("পার্শ্বপ্রতিক্রিয়া (Side Effects)", medicine.sideEffects, Icons.report_problem_rounded, AppTheme.warningRed),
-                const SizedBox(height: 16),
-                _buildInfoSection("মূল্য (Price)", medicine.price, Icons.monetization_on_rounded, Colors.amber),
-                const SizedBox(height: 28),
+                const SizedBox(height: 12),
+                _buildInfoSection(
+                  "খাওয়ার নিয়ম",
+                  medicine.instructions,
+                  Icons.info_outline_rounded,
+                  const Color(0xFFA78BFA),
+                ),
+                const SizedBox(height: 12),
+                _buildInfoSection(
+                  "পার্শ্বপ্রতিক্রিয়া",
+                  medicine.sideEffects,
+                  Icons.report_problem_rounded,
+                  AppTheme.warningRed,
+                ),
+                const SizedBox(height: 12),
+                _buildInfoSection(
+                  "আনুমানিক মূল্য",
+                  medicine.price,
+                  Icons.monetization_on_rounded,
+                  const Color(0xFFFBBF24),
+                ),
                 if (medicine.genericAlternatives.isNotEmpty) ...[
-                  const Text(
-                    "সস্তা বিকল্প ওষুধ (Generic Alternatives)",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  ...medicine.genericAlternatives.map((alt) => Card(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        child: ListTile(
-                          leading: const CircleAvatar(
-                            backgroundColor: Color(0x1A00BFA5),
-                            child: Icon(Icons.medication_rounded, color: AppTheme.accentTeal),
-                          ),
-                          title: Text(alt.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                          subtitle: Text(alt.manufacturer),
-                          trailing: Text(
-                            alt.price,
-                            style: const TextStyle(
-                              color: AppTheme.accentTeal,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      )),
+                  const SizedBox(height: 24),
+                  _buildAlternativesSection(medicine),
                 ],
+                const SizedBox(height: 16),
               ],
             ),
           ),
         ),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: const BoxDecoration(
-            color: Color(0x1AEF4444),
-            border: Border(top: BorderSide(color: Color(0x4DEF4444))),
+        _buildDisclaimer(),
+      ],
+    );
+  }
+
+  Widget _buildImageCard() {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: Stack(
+        children: [
+          Image.file(
+            File(widget.imagePath),
+            height: 150,
+            width: double.infinity,
+            fit: BoxFit.cover,
           ),
-          child: const Row(
-            children: [
-              Icon(Icons.warning_amber_rounded, color: AppTheme.warningRed),
-              SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  AppConstants.medicalDisclaimer,
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 60,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    AppTheme.darkBg.withAlpha(200),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const Positioned(
+            bottom: 10,
+            left: 12,
+            child: Row(
+              children: [
+                Icon(Icons.check_circle_rounded, color: AppTheme.accentTeal, size: 16),
+                SizedBox(width: 6),
+                Text(
+                  "স্ক্যান সম্পন্ন",
                   style: TextStyle(
-                    color: AppTheme.warningRed,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
                   ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMedicineHeader(Medicine medicine) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1A2640), Color(0xFF161E31)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.accentTeal.withAlpha(60)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            medicine.name,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.accentTeal,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            medicine.genericName,
+            style: const TextStyle(
+              fontSize: 15,
+              color: AppTheme.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              const Icon(Icons.business_rounded, size: 14, color: AppTheme.textSecondary),
+              const SizedBox(width: 6),
+              Text(
+                medicine.manufacturer,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: AppTheme.textSecondary,
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTtsControls(BuildContext context, String ttsText) {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () {
+              context.read<MedicineBloc>().add(ReadMedicineTtsEvent(ttsText));
+            },
+            icon: const Icon(Icons.volume_up_rounded),
+            label: const Text("পড়ে শোনান"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.accentIndigo,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        OutlinedButton(
+          onPressed: () {
+            context.read<MedicineBloc>().add(StopMedicineTtsEvent());
+          },
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppTheme.warningRed,
+            side: const BorderSide(color: Color(0xFF263238)),
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          child: const Icon(Icons.volume_off_rounded),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoSection(
+    String title,
+    String content,
+    IconData icon,
+    Color color,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.cardBg,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFF263238)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: color.withAlpha(25),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: color,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  content.isEmpty ? 'তথ্য পাওয়া যায়নি' : content,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    color: AppTheme.textPrimary,
+                    height: 1.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAlternativesSection(Medicine medicine) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 4,
+              height: 20,
+              decoration: BoxDecoration(
+                color: AppTheme.accentTeal,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              "সস্তা বিকল্প ওষুধ",
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        ...medicine.genericAlternatives.map(
+          (alt) => Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppTheme.cardBg,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppTheme.accentTeal.withAlpha(50)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: AppTheme.accentTeal.withAlpha(20),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.medication_rounded,
+                    color: AppTheme.accentTeal,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        alt.name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textPrimary,
+                          fontSize: 15,
+                        ),
+                      ),
+                      Text(
+                        alt.manufacturer,
+                        style: const TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: AppTheme.accentTeal.withAlpha(20),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    alt.price,
+                    style: const TextStyle(
+                      color: AppTheme.accentTeal,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildInfoSection(String title, String content, IconData icon, Color color) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: color, size: 24),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppTheme.textSecondary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    content,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: AppTheme.textPrimary,
-                    ),
-                  ),
-                ],
+  Widget _buildDisclaimer() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: const BoxDecoration(
+        color: Color(0x1AEF4444),
+        border: Border(top: BorderSide(color: Color(0x4DEF4444))),
+      ),
+      child: const Row(
+        children: [
+          Icon(Icons.warning_amber_rounded, color: AppTheme.warningRed, size: 18),
+          SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              AppConstants.medicalDisclaimer,
+              style: TextStyle(
+                color: AppTheme.warningRed,
+                fontSize: 11,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
+    );
+  }
+}
+
+class ClipRRectLoadingBar extends StatefulWidget {
+  const ClipRRectLoadingBar({super.key});
+
+  @override
+  State<ClipRRectLoadingBar> createState() => _ClipRRectLoadingBarState();
+}
+
+class _ClipRRectLoadingBarState extends State<ClipRRectLoadingBar>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat();
+    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        AnimatedBuilder(
+          animation: _animation,
+          builder: (context, child) {
+            return Container(
+              width: 200,
+              height: 4,
+              decoration: BoxDecoration(
+                color: const Color(0xFF263238),
+                borderRadius: BorderRadius.circular(2),
+              ),
+              child: Align(
+                alignment: Alignment(
+                  -1.0 + _animation.value * 2.0,
+                  0,
+                ),
+                child: Container(
+                  width: 80,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [AppTheme.accentTeal, AppTheme.accentIndigo],
+                    ),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 16),
+        const Text(
+          "OCR → এআই প্রসেসিং → ফলাফল",
+          style: TextStyle(
+            color: AppTheme.textSecondary,
+            fontSize: 12,
+          ),
+        ),
+      ],
     );
   }
 }

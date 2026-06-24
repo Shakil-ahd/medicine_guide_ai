@@ -6,4 +6,5 @@ class AppConstants {
   static const String pillReminder = "মেডিসিন রিমাইন্ডার";
   static const String medicalDiary = "মেডিকেল হিস্ট্রি";
   static const String voiceAssistant = "ভয়েস অ্যাসিস্ট্যান্ট";
+  static const String modelsUrl = "https://generativelanguage.googleapis.com/v1beta/models";
 }
