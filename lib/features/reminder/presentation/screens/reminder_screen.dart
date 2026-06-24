@@ -357,7 +357,7 @@ class ReminderScreen extends StatelessWidget {
                   children: [
                     Switch(
                       value: reminder.isActive,
-                      activeColor: AppTheme.accentTeal,
+                      activeThumbColor: AppTheme.accentTeal,
                       onChanged: (val) {
                         if (reminder.id != null) {
                           context.read<ReminderBloc>().add(
