@@ -1,8 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:medicine_guide_ai/core/constants/constants.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
+import 'package:medicine_guide_ai/core/services/database_helper.dart';
+import 'package:medicine_guide_ai/core/services/gemini_service.dart';
+import 'package:medicine_guide_ai/core/services/ocr_service.dart';
+import 'package:medicine_guide_ai/core/services/tts_service.dart';
 import 'package:medicine_guide_ai/features/dashboard/presentation/bloc/navigation_bloc.dart';
+import 'package:medicine_guide_ai/features/scanner/data/datasources/medicine_local_datasource.dart';
+import 'package:medicine_guide_ai/features/scanner/data/datasources/medicine_remote_datasource.dart';
+import 'package:medicine_guide_ai/features/scanner/data/repositories/medicine_repository_impl.dart';
+import 'package:medicine_guide_ai/features/scanner/presentation/bloc/medicine_bloc.dart';
+import 'package:medicine_guide_ai/features/scanner/presentation/screens/scan_result_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -10,7 +20,7 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<Widget> pages = [
-      _buildHomeView(),
+      _buildHomeView(context),
       _buildPlaceholderView(AppConstants.pillReminder, Icons.alarm),
       _buildPlaceholderView(AppConstants.medicalDiary, Icons.book_online),
       _buildPlaceholderView("সেটিংস", Icons.settings),
@@ -65,7 +75,7 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHomeView() {
+  Widget _buildHomeView(BuildContext context) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -126,7 +136,7 @@ class DashboardScreen extends StatelessWidget {
                 subtitle: "ক্যামেরা দিয়ে স্ক্যান করুন",
                 icon: Icons.camera_alt_rounded,
                 color: AppTheme.accentTeal,
-                onTap: () {},
+                onTap: () => _showImageSourceSheet(context),
               ),
               _buildFeatureCard(
                 title: AppConstants.prescriptionReader,
@@ -161,6 +171,103 @@ class DashboardScreen extends StatelessWidget {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  void _showImageSourceSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.cardBg,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  "ওষুধ স্ক্যান করার উৎস নির্বাচন করুন",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildSourceOption(
+                      context: context,
+                      sheetContext: sheetContext,
+                      label: "ক্যামেরা",
+                      icon: Icons.camera_alt_rounded,
+                      source: ImageSource.camera,
+                    ),
+                    _buildSourceOption(
+                      context: context,
+                      sheetContext: sheetContext,
+                      label: "গ্যালারি",
+                      icon: Icons.photo_library_rounded,
+                      source: ImageSource.gallery,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSourceOption({
+    required BuildContext context,
+    required BuildContext sheetContext,
+    required String label,
+    required IconData icon,
+    required ImageSource source,
+  }) {
+    return InkWell(
+      onTap: () async {
+        Navigator.pop(sheetContext);
+        final picker = ImagePicker();
+        final image = await picker.pickImage(source: source);
+        if (image != null) {
+          if (!context.mounted) return;
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (routeContext) => BlocProvider(
+                create: (blocContext) => MedicineBloc(
+                  repository: MedicineRepositoryImpl(
+                    ocrService: OcrService(),
+                    localDataSource: MedicineLocalDataSourceImpl(DatabaseHelper.instance),
+                    remoteDataSource: MedicineRemoteDataSourceImpl(GeminiService()),
+                  ),
+                  ttsService: TtsService(),
+                ),
+                child: ScanResultScreen(imagePath: image.path),
+              ),
+            ),
+          );
+        }
+      },
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CircleAvatar(
+            radius: 30,
+            backgroundColor: const Color(0x1A00BFA5),
+            child: Icon(icon, color: AppTheme.accentTeal, size: 28),
+          ),
+          const SizedBox(height: 8),
+          Text(label, style: const TextStyle(color: AppTheme.textPrimary)),
         ],
       ),
     );
