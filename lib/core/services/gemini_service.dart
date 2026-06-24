@@ -45,7 +45,9 @@ Extract the primary medicine name and structure the response as a JSON object co
       if (text != null && text.isNotEmpty) {
         return jsonDecode(text) as Map<String, dynamic>;
       }
-    } catch (_) {}
+    } catch (e) {
+      print(e);
+    }
     return null;
   }
 
@@ -76,7 +78,9 @@ Output a JSON array of objects in Bengali, matching this schema:
       if (text != null && text.isNotEmpty) {
         return jsonDecode(text) as List<dynamic>;
       }
-    } catch (_) {}
+    } catch (e) {
+      print(e);
+    }
     return null;
   }
 }

@@ -22,6 +22,7 @@ class MedicineRepositoryImpl implements MedicineRepository {
   Future<(Failure?, Medicine?)> getMedicineDetailsFromImage(String imagePath) async {
     try {
       final ocrText = await _ocrService.recognizeText(imagePath);
+      print("OCR Text: $ocrText");
       if (ocrText.trim().isEmpty) {
         return (const ServerFailure("ছবি থেকে কোনো লেখা পড়া যায়নি।"), null);
       }
@@ -42,6 +43,7 @@ class MedicineRepositoryImpl implements MedicineRepository {
 
       return (null, remoteMedicine);
     } catch (e) {
+      print("Repository Error: $e");
       return (ServerFailure("ত্রুটি ঘটেছে: ${e.toString()}"), null);
     }
   }
