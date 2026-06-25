@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
@@ -17,6 +18,39 @@ class MedicalDiaryScreen extends StatefulWidget {
 }
 
 class _MedicalDiaryScreenState extends State<MedicalDiaryScreen> {
+  final Set<int> _expandedIds = {};
+
+  void _showImageDialog(BuildContext context, String path) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Stack(
+          alignment: Alignment.topRight,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Image.file(File(path), fit: BoxFit.contain),
+            ),
+            Positioned(
+              top: 10,
+              right: 10,
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.black54,
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.close_rounded, color: Colors.white, size: 24),
+                  onPressed: () => Navigator.pop(ctx),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
   @override
   void initState() {
     super.initState();
@@ -155,6 +189,258 @@ class _MedicalDiaryScreenState extends State<MedicalDiaryScreen> {
       itemCount: history.length,
       itemBuilder: (context, index) {
         final entry = history[index];
+        final isExpanded = _expandedIds.contains(entry.id);
+
+        if (entry.isPrescription) {
+          final fileExists = entry.imagePath != null && File(entry.imagePath!).existsSync();
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: AppTheme.cardBg,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isExpanded ? AppTheme.accentIndigo.withAlpha(150) : const Color(0xFF263238),
+              ),
+              boxShadow: isExpanded
+                  ? [
+                      BoxShadow(
+                        color: AppTheme.accentIndigo.withAlpha(20),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ]
+                  : null,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    children: [
+                      // Large prescription image
+                      GestureDetector(
+                        onTap: fileExists ? () => _showImageDialog(context, entry.imagePath!) : null,
+                        child: Hero(
+                          tag: 'prescription_img_${entry.id}',
+                          child: Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1E293B),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFF263238)),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(11),
+                              child: fileExists
+                                  ? Image.file(
+                                      File(entry.imagePath!),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : const Icon(
+                                      Icons.description_rounded,
+                                      color: AppTheme.textSecondary,
+                                      size: 32,
+                                    ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      // Details beside the image
+                      Expanded(
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () {
+                            setState(() {
+                              if (isExpanded) {
+                                _expandedIds.remove(entry.id);
+                              } else {
+                                _expandedIds.add(entry.id!);
+                              }
+                            });
+                          },
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'প্রেসক্রিপশন স্ক্যান',
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.textPrimary),
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.access_time_rounded,
+                                    size: 12,
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(
+                                      _formatDate(entry.scannedAt),
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: AppTheme.textSecondary,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.accentTeal.withAlpha(20),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  '${entry.prescriptionMedicines!.length}টি ওষুধ চিহ্নিত',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: AppTheme.accentTeal,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Expand / Show icon button
+                      TextButton.icon(
+                        style: TextButton.styleFrom(
+                          foregroundColor: isExpanded ? AppTheme.accentIndigo : AppTheme.accentTeal,
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            if (isExpanded) {
+                              _expandedIds.remove(entry.id);
+                            } else {
+                              _expandedIds.add(entry.id!);
+                            }
+                          });
+                        },
+                        icon: Icon(
+                          isExpanded ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                          size: 18,
+                        ),
+                        label: Text(
+                          isExpanded ? 'লুকান' : 'দেখুন',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.delete_outline_rounded,
+                          color: AppTheme.warningRed,
+                          size: 22,
+                        ),
+                        onPressed: () {
+                          if (entry.id != null) {
+                            context.read<HistoryBloc>().add(
+                              DeleteHistoryItemEvent(entry.id!),
+                            );
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                // Expanded list of medicines
+                if (isExpanded) ...[
+                  const Divider(color: Color(0xFF263238), height: 1),
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'চিহ্নিত ওষুধসমূহ (বিস্তারিত দেখতে ক্লিক করুন):',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppTheme.textSecondary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        ...entry.prescriptionMedicines!.map((med) => Card(
+                          color: const Color(0xFF1E293B).withAlpha(120),
+                          margin: const EdgeInsets.only(bottom: 8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            side: const BorderSide(color: Color(0xFF263238)),
+                          ),
+                          child: InkWell(
+                            onTap: () => _viewMedicineDetails(context, med.name),
+                            borderRadius: BorderRadius.circular(10),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.medication_rounded,
+                                    color: AppTheme.accentIndigo,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          med.name,
+                                          style: const TextStyle(
+                                            color: AppTheme.textPrimary,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'উদ্দেশ্য: ${med.purpose.isNotEmpty ? med.purpose : 'N/A'} • ডোজ: ${med.dosage} • সময়কাল: ${med.duration}',
+                                          style: const TextStyle(
+                                            color: AppTheme.textSecondary,
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const Icon(
+                                    Icons.arrow_forward_ios_rounded,
+                                    color: AppTheme.textSecondary,
+                                    size: 12,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        )),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          );
+        }
+
+        // Regular Scanned Medicine layout
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(

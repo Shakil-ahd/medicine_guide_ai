@@ -20,7 +20,7 @@ class DatabaseHelper {
     final path = join(dbPath, filePath);
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -58,7 +58,9 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         medicineName TEXT,
         scannedAt TEXT,
-        isOffline INTEGER
+        isOffline INTEGER,
+        imagePath TEXT,
+        prescriptionMedicinesJson TEXT
       )
     ''');
 
@@ -98,6 +100,14 @@ class DatabaseHelper {
           value TEXT
         )
       ''');
+    }
+    if (oldVersion < 4) {
+      try {
+        await db.execute('ALTER TABLE history ADD COLUMN imagePath TEXT');
+      } catch (_) {}
+      try {
+        await db.execute('ALTER TABLE history ADD COLUMN prescriptionMedicinesJson TEXT');
+      } catch (_) {}
     }
   }
 
@@ -146,7 +156,41 @@ class DatabaseHelper {
 
   Future<int> insertHistory(Map<String, dynamic> row) async {
     final db = await instance.database;
-    return await db.insert('history', row);
+    final medicineName = row['medicineName'] as String? ?? '';
+    final imagePath = row['imagePath'] as String?;
+
+    List<Map<String, dynamic>> existing = [];
+    if (imagePath != null && imagePath.isNotEmpty) {
+      existing = await db.query(
+        'history',
+        where: 'imagePath = ?',
+        whereArgs: [imagePath],
+      );
+    } else {
+      existing = await db.query(
+        'history',
+        where: 'LOWER(medicineName) = ? AND (imagePath IS NULL OR imagePath = "")',
+        whereArgs: [medicineName.toLowerCase()],
+      );
+    }
+
+    if (existing.isNotEmpty) {
+      final id = existing.first['id'] as int;
+      await db.update(
+        'history',
+        {
+          'scannedAt': row['scannedAt'],
+          'isOffline': row['isOffline'],
+          if (row.containsKey('prescriptionMedicinesJson'))
+            'prescriptionMedicinesJson': row['prescriptionMedicinesJson'],
+        },
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+      return id;
+    } else {
+      return await db.insert('history', row);
+    }
   }
 
   Future<List<Map<String, dynamic>>> getHistory() async {
