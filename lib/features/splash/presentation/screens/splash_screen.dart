@@ -16,10 +16,13 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   late Animation<double> _opacityAnimation;
+
+  late AnimationController _scannerController;
+  late Animation<double> _laserAnimation;
 
   @override
   void initState() {
@@ -35,6 +38,15 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeIn),
+    );
+
+    _scannerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat(reverse: true);
+
+    _laserAnimation = Tween<double>(begin: 22.0, end: 88.0).animate(
+      CurvedAnimation(parent: _scannerController, curve: Curves.easeInOut),
     );
 
     _controller.forward();
@@ -64,6 +76,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   void dispose() {
     _controller.dispose();
+    _scannerController.dispose();
     super.dispose();
   }
 
@@ -82,30 +95,74 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Glowing logo badge
+                    // Combined Prescription and Scanner Logo with animates laser line
                     Container(
-                      width: 110,
-                      height: 110,
+                      width: 120,
+                      height: 120,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [AppTheme.accentIndigo, AppTheme.accentTeal],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
                         shape: BoxShape.circle,
+                        color: AppTheme.accentTeal.withAlpha(15),
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.accentTeal.withAlpha(80),
+                            color: AppTheme.accentTeal.withAlpha(30),
                             blurRadius: 30,
                             spreadRadius: 2,
-                            offset: const Offset(0, 0),
                           ),
                         ],
                       ),
-                      child: const Icon(
-                        Icons.health_and_safety_rounded,
-                        size: 58,
-                        color: Colors.white,
+                      child: AnimatedBuilder(
+                        animation: _scannerController,
+                        builder: (context, child) {
+                          return Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              // Background circular outline
+                              Container(
+                                width: 100,
+                                height: 100,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppTheme.accentTeal.withAlpha(40),
+                                    width: 1.5,
+                                  ),
+                                ),
+                              ),
+                              // Prescription Document Icon
+                              const Icon(
+                                Icons.description_rounded,
+                                size: 48,
+                                color: Colors.white,
+                              ),
+                              // Scanner Frame Icon
+                              const Icon(
+                                Icons.document_scanner_outlined,
+                                size: 80,
+                                color: AppTheme.accentTeal,
+                              ),
+                              // Animated Laser line
+                              Positioned(
+                                top: _laserAnimation.value,
+                                left: 24,
+                                right: 24,
+                                child: Container(
+                                  height: 3,
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.accentIndigo,
+                                    borderRadius: BorderRadius.circular(2),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppTheme.accentIndigo.withAlpha(200),
+                                        blurRadius: 6,
+                                        spreadRadius: 1,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
                       ),
                     ),
                     const SizedBox(height: 28),
