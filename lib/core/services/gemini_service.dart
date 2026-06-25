@@ -78,14 +78,17 @@ class GeminiService {
     String scannedText,
   ) async {
     final prompt =
-        'You are a medical AI assistant for Bangladesh. Analyze this OCR text from a medicine pack:\n'
+        'You are a medical assistant for Bangladesh. Analyze this OCR text from a medicine pack:\n'
         '"$scannedText"\n'
         'Return ONLY a valid JSON object (no markdown, no explanation) with this exact structure:\n'
         '{"name":"medicine name in English","genericName":"generic/chemical name",'
         '"manufacturer":"company name","indications":"ব্যবহার বাংলায়",'
         '"sideEffects":"পার্শ্বপ্রতিক্রিয়া বাংলায়","dosage":"মাত্রা বাংলায়",'
-        '"instructions":"সেবনবিধি বাংলায়","price":"আনুমানিক মূল্য বাংলায়",'
-        '"genericAlternatives":[{"name":"alternative name","manufacturer":"manufacturer","price":"price"}]}';
+        '"instructions":"সেবনবিধি বাংলায়","price":"প্রকৃত খুচরা মূল্য বাংলায় (যেমন: ৳১২ / ট্যাবলেট)",'
+        '"genericAlternatives":[{"name":"alternative name","manufacturer":"manufacturer","price":"price"}]}\n'
+        'Important guidelines:\n'
+        '1. Retrieve the actual, accurate market retail price in Bangladesh Taka (৳) from your knowledge base for the brand. Do not give arbitrary mock prices.\n'
+        '2. Provide actual alternative brands commonly available in Bangladesh with their current prices.';
 
     for (final modelName in _models) {
       try {
@@ -141,7 +144,7 @@ class GeminiService {
 
   Future<List<dynamic>?> parsePrescription(String imagePath) async {
     final prompt =
-        'You are a medical AI assistant for Bangladesh. Read this handwritten prescription image carefully.\n'
+        'You are a medical assistant for Bangladesh. Read this handwritten prescription image carefully.\n'
         'Extract all medicines listed. For each medicine, provide additional details from your medical knowledge base.\n'
         'Return ONLY a valid JSON array (no markdown, no extra text) with this exact structure:\n'
         '[{"name":"medicine name","purpose":"কেন খেতে হবে বাংলায়",'
@@ -150,8 +153,12 @@ class GeminiService {
         '"genericName":"generic/chemical name of the medicine in English",'
         '"manufacturer":"Bangladesh company name (manufacturer) in English",'
         '"sideEffects":"পার্শ্বপ্রতিক্রিয়া বাংলায়",'
-        '"price":"আনুমানিক মূল্য বাংলায় (যেমন: ৳২.৫ / ট্যাবলেট)",'
-        '"genericAlternatives":[{"name":"alternative name","manufacturer":"manufacturer","price":"price"}]}]';
+        '"price":"প্রকৃত খুচরা মূল্য বাংলায় (যেমন: ৳২.৫ / ট্যাবলেট)",'
+        '"genericAlternatives":[{"name":"alternative name","manufacturer":"manufacturer","price":"price"}]}]\n'
+        'Critical accuracy guidelines:\n'
+        '1. Pay extreme attention to the handwritten numbers, dose instructions, and quantities. Read the exact number of tablets/capsules prescribed (e.g. if the doctor wrote "1 tablet" or "১টি করে" or "১+০+১" or "1 time a day", DO NOT return "2 tablets" or "২টি করে"). The dosage and frequency count must be 100% accurate.\n'
+        '2. Retrieve the actual, highly accurate retail market price in Bangladesh Taka (৳) for each medicine from your knowledge base. Do not make up mock prices.\n'
+        '3. Provide real alternative brands in Bangladesh with their actual retail prices.';
 
     final mimeType = _getMimeType(imagePath);
 
