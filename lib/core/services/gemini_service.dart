@@ -98,6 +98,16 @@ class GeminiService {
         final decoded = jsonDecode(cleaned);
         if (decoded is Map<String, dynamic>) return decoded;
       } catch (e) {
+        final errMsg = e.toString().toLowerCase();
+        if (errMsg.contains('api_key_invalid') ||
+            errMsg.contains('api key not valid') ||
+            errMsg.contains('invalid api key') ||
+            errMsg.contains('socketexception') ||
+            errMsg.contains('network') ||
+            errMsg.contains('connection')) {
+          print('Fatal network or API key error: $e. Aborting model loop.');
+          break;
+        }
         if (_isQuotaError(e)) {
           print('Quota hit on $modelName, skipping...');
           continue;
@@ -154,6 +164,16 @@ class GeminiService {
         final decoded = jsonDecode(cleaned);
         if (decoded is List) return decoded;
       } catch (e) {
+        final errMsg = e.toString().toLowerCase();
+        if (errMsg.contains('api_key_invalid') ||
+            errMsg.contains('api key not valid') ||
+            errMsg.contains('invalid api key') ||
+            errMsg.contains('socketexception') ||
+            errMsg.contains('network') ||
+            errMsg.contains('connection')) {
+          print('Fatal network or API key error: $e. Aborting model loop.');
+          break;
+        }
         if (_isQuotaError(e)) {
           print('Quota hit on $modelName, skipping...');
           continue;

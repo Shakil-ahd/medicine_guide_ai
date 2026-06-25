@@ -359,19 +359,8 @@ class _PrescriptionScanScreenState extends State<PrescriptionScanScreen> {
                       PrescriptionScanRequested(_selectedImagePath!),
                     );
               },
-        icon: isLoading
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2,
-                ),
-              )
-            : const Icon(Icons.auto_awesome_rounded),
-        label: Text(
-          isLoading ? 'বিশ্লেষণ করা হচ্ছে...' : 'এআই দিয়ে বিশ্লেষণ করুন',
-        ),
+        icon: const Icon(Icons.auto_awesome_rounded),
+        label: const Text('এআই দিয়ে বিশ্লেষণ করুন'),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppTheme.accentIndigo,
           foregroundColor: Colors.white,
@@ -448,7 +437,11 @@ class _PrescriptionScanScreenState extends State<PrescriptionScanScreen> {
 
   Future<void> _pickImage(ImageSource source) async {
     final picker = ImagePicker();
-    final image = await picker.pickImage(source: source, imageQuality: 85);
+    final image = await picker.pickImage(
+      source: source,
+      imageQuality: 50,
+      maxWidth: 1000,
+    );
     if (image != null) {
       setState(() => _selectedImagePath = image.path);
     }

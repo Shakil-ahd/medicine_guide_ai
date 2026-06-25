@@ -522,7 +522,11 @@ class DashboardScreen extends StatelessWidget {
         onTap: () async {
           Navigator.pop(sheetCtx);
           final picker = ImagePicker();
-          final image = await picker.pickImage(source: source, imageQuality: 90);
+          final image = await picker.pickImage(
+            source: source,
+            imageQuality: 50,
+            maxWidth: 1000,
+          );
           if (image != null && context.mounted) {
             Navigator.push(
               context,
