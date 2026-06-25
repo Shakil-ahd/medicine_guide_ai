@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -9,16 +9,30 @@ class GeminiService {
   static const List<String> _models = [
     'gemini-2.0-flash-lite',
     'gemini-2.0-flash',
-    'gemini-2.5-flash',
     'gemini-2.5-flash-lite',
+    'gemini-2.5-flash',
   ];
 
-  static const Duration _timeout = Duration(seconds: 35);
+  static const Duration _timeout = Duration(seconds: 40);
 
-  GenerativeModel _buildModel(String modelName) {
+  int _currentKeyIndex = 0;
+
+  String get _currentKey {
+    if (Secrets.geminiApiKeys.isEmpty) return Secrets.geminiApiKey;
+    return Secrets.geminiApiKeys[_currentKeyIndex % Secrets.geminiApiKeys.length];
+  }
+
+  void _rotateKey() {
+    if (Secrets.geminiApiKeys.length > 1) {
+      _currentKeyIndex = (_currentKeyIndex + 1) % Secrets.geminiApiKeys.length;
+      debugPrint('[GeminiService] Rotated to key index $_currentKeyIndex');
+    }
+  }
+
+  GenerativeModel _buildModel(String modelName, {String? apiKey}) {
     return GenerativeModel(
       model: modelName,
-      apiKey: Secrets.geminiApiKey,
+      apiKey: apiKey ?? _currentKey,
       generationConfig: GenerationConfig(
         responseMimeType: 'application/json',
         temperature: 0.1,
@@ -55,12 +69,13 @@ class GeminiService {
     return msg.contains('429') ||
         msg.contains('quota') ||
         msg.contains('resource_exhausted') ||
-        msg.contains('too many requests');
+        msg.contains('too many requests') ||
+        msg.contains('rate limit');
   }
 
   bool _isServerBusyError(Object e) {
     final msg = e.toString().toLowerCase();
-    return msg.contains('503') && msg.contains('unavailable');
+    return msg.contains('503') || msg.contains('unavailable') || msg.contains('overloaded');
   }
 
   bool _isFatalError(Object e) {
@@ -71,6 +86,129 @@ class GeminiService {
         msg.contains('socketexception') ||
         msg.contains('network is unreachable') ||
         msg.contains('no address associated');
+  }
+
+  Future<Map<String, dynamic>?> _tryWithKeysAndModel(
+    String modelName,
+    List<Content> Function(String) buildContent,
+  ) async {
+    final totalKeys = Secrets.geminiApiKeys.isEmpty ? 1 : Secrets.geminiApiKeys.length;
+
+    for (int ki = 0; ki < totalKeys; ki++) {
+      final key = Secrets.geminiApiKeys.isEmpty
+          ? Secrets.geminiApiKey
+          : Secrets.geminiApiKeys[(_currentKeyIndex + ki) % totalKeys];
+
+      try {
+        debugPrint('[GeminiService] Trying model=$modelName key_index=${(_currentKeyIndex + ki) % totalKeys}');
+        final model = _buildModel(modelName, apiKey: key);
+        final content = buildContent(key);
+
+        final response = await model.generateContent(content).timeout(
+              _timeout,
+              onTimeout: () => throw TimeoutException('Timeout on $modelName'),
+            );
+
+        final text = response.text;
+        if (text == null || text.trim().isEmpty) {
+          debugPrint('[GeminiService] Empty response from $modelName');
+          return null;
+        }
+
+        final cleaned = _cleanJson(text);
+        try {
+          final decoded = jsonDecode(cleaned);
+          if (decoded is Map<String, dynamic>) {
+            debugPrint('[GeminiService] ✓ Success: model=$modelName');
+            _currentKeyIndex = (_currentKeyIndex + ki) % totalKeys;
+            return decoded;
+          }
+        } catch (_) {
+          debugPrint('[GeminiService] JSON parse error on $modelName');
+          return null;
+        }
+      } on TimeoutException {
+        debugPrint('[GeminiService] Timeout on $modelName key $ki');
+        continue;
+      } catch (e) {
+        if (_isFatalError(e)) {
+          debugPrint('[GeminiService] Fatal network error: $e');
+          return null;
+        }
+        if (_isQuotaError(e)) {
+          debugPrint('[GeminiService] Quota hit on key $ki, trying next key...');
+          continue;
+        }
+        if (_isServerBusyError(e)) {
+          debugPrint('[GeminiService] Server busy, waiting 2s...');
+          await Future.delayed(const Duration(seconds: 2));
+          continue;
+        }
+        debugPrint('[GeminiService] Error on $modelName key $ki: $e');
+        return null;
+      }
+    }
+    return null;
+  }
+
+  Future<List<dynamic>?> _tryListWithKeysAndModel(
+    String modelName,
+    List<Content> Function(String) buildContent,
+  ) async {
+    final totalKeys = Secrets.geminiApiKeys.isEmpty ? 1 : Secrets.geminiApiKeys.length;
+
+    for (int ki = 0; ki < totalKeys; ki++) {
+      final key = Secrets.geminiApiKeys.isEmpty
+          ? Secrets.geminiApiKey
+          : Secrets.geminiApiKeys[(_currentKeyIndex + ki) % totalKeys];
+
+      try {
+        debugPrint('[GeminiService] Trying model=$modelName key_index=${(_currentKeyIndex + ki) % totalKeys}');
+        final model = _buildModel(modelName, apiKey: key);
+        final content = buildContent(key);
+
+        final response = await model.generateContent(content).timeout(
+              _timeout,
+              onTimeout: () => throw TimeoutException('Timeout on $modelName'),
+            );
+
+        final text = response.text;
+        if (text == null || text.trim().isEmpty) continue;
+
+        final cleaned = _cleanJson(text);
+        try {
+          final decoded = jsonDecode(cleaned);
+          if (decoded is List) {
+            debugPrint('[GeminiService] ✓ Prescription success: model=$modelName');
+            _currentKeyIndex = (_currentKeyIndex + ki) % totalKeys;
+            return decoded;
+          }
+        } catch (_) {
+          debugPrint('[GeminiService] JSON parse error on $modelName');
+          return null;
+        }
+      } on TimeoutException {
+        debugPrint('[GeminiService] Timeout on $modelName key $ki');
+        continue;
+      } catch (e) {
+        if (_isFatalError(e)) {
+          debugPrint('[GeminiService] Fatal network error: $e');
+          return null;
+        }
+        if (_isQuotaError(e)) {
+          debugPrint('[GeminiService] Quota hit on key $ki, trying next key...');
+          continue;
+        }
+        if (_isServerBusyError(e)) {
+          debugPrint('[GeminiService] Server busy, waiting 2s...');
+          await Future.delayed(const Duration(seconds: 2));
+          continue;
+        }
+        debugPrint('[GeminiService] Error on $modelName key $ki: $e');
+        return null;
+      }
+    }
+    return null;
   }
 
   Future<Map<String, dynamic>?> fetchMedicineDetails(
@@ -92,92 +230,17 @@ class GeminiService {
         '4. Alternatives must be real brands available in Bangladesh pharmacies.';
 
     final mimeType = _getMimeType(imagePath);
+    final bytes = await File(imagePath).readAsBytes();
 
     for (final modelName in _models) {
-      try {
-        debugPrint('[GeminiService] Trying model: $modelName');
-        final model = _buildModel(modelName);
-        final bytes = await File(imagePath).readAsBytes();
-        final content = [
-          Content.multi([TextPart(prompt), DataPart(mimeType, bytes)]),
-        ];
-
-        final response = await model.generateContent(content).timeout(
-              _timeout,
-              onTimeout: () {
-                throw TimeoutException('Model $modelName timed out after 35s');
-              },
-            );
-
-        final text = response.text;
-        if (text == null || text.trim().isEmpty) {
-          debugPrint(
-            '[GeminiService] Empty response from $modelName, skipping',
-          );
-          continue;
-        }
-
-        final cleaned = _cleanJson(text);
-        try {
-          final decoded = jsonDecode(cleaned);
-          if (decoded is Map<String, dynamic>) {
-            debugPrint('[GeminiService] Success with $modelName');
-            return decoded;
-          }
-        } catch (parseError) {
-          debugPrint(
-            '[GeminiService] JSON parse error on $modelName: $parseError',
-          );
-          continue;
-        }
-      } on TimeoutException {
-        debugPrint('[GeminiService] Timeout on $modelName, trying next...');
-        continue;
-      } catch (e) {
-        if (_isFatalError(e)) {
-          debugPrint('[GeminiService] Fatal error, aborting: $e');
-          break;
-        }
-        if (_isQuotaError(e)) {
-          debugPrint('[GeminiService] Quota hit on $modelName, skipping...');
-          continue;
-        }
-        if (_isServerBusyError(e)) {
-          debugPrint(
-            '[GeminiService] Server busy on $modelName, waiting 3s...',
-          );
-          await Future.delayed(const Duration(seconds: 3));
-          try {
-            final model = _buildModel(modelName);
-            final bytes = await File(imagePath).readAsBytes();
-            final content = [
-              Content.multi([TextPart(prompt), DataPart(mimeType, bytes)]),
-            ];
-            final response = await model.generateContent(content).timeout(
-                  _timeout,
-                  onTimeout: () {
-                    throw TimeoutException('Retry timeout');
-                  },
-                );
-            final text = response.text;
-            if (text != null && text.trim().isNotEmpty) {
-              final cleaned = _cleanJson(text);
-              try {
-                final decoded = jsonDecode(cleaned);
-                if (decoded is Map<String, dynamic>) return decoded;
-              } catch (_) {}
-            }
-          } catch (_) {
-            debugPrint('[GeminiService] Retry failed on $modelName');
-          }
-          continue;
-        }
-        debugPrint('[GeminiService] Error on $modelName: $e, skipping...');
-        continue;
-      }
+      final result = await _tryWithKeysAndModel(
+        modelName,
+        (_) => [Content.multi([TextPart(prompt), DataPart(mimeType, bytes)])],
+      );
+      if (result != null) return result;
     }
 
-    debugPrint('[GeminiService] All models exhausted for medicine details.');
+    debugPrint('[GeminiService] All models and keys exhausted for medicine details.');
     return null;
   }
 
@@ -200,85 +263,19 @@ class GeminiService {
         '4. Alternatives must be real brands in Bangladesh pharmacies.';
 
     final mimeType = _getMimeType(imagePath);
+    final bytes = await File(imagePath).readAsBytes();
 
     for (final modelName in _models) {
-      try {
-        debugPrint('[GeminiService] Prescription - trying: $modelName');
-        final model = _buildModel(modelName);
-        final bytes = await File(imagePath).readAsBytes();
-        final content = [
-          Content.multi([TextPart(prompt), DataPart(mimeType, bytes)]),
-        ];
-
-        final response = await model.generateContent(content).timeout(
-              _timeout,
-              onTimeout: () {
-                throw TimeoutException('Model $modelName timed out after 35s');
-              },
-            );
-
-        final text = response.text;
-        if (text == null || text.trim().isEmpty) continue;
-
-        final cleaned = _cleanJson(text);
-        try {
-          final decoded = jsonDecode(cleaned);
-          if (decoded is List) {
-            debugPrint('[GeminiService] Prescription success with $modelName');
-            return decoded;
-          }
-        } catch (parseError) {
-          debugPrint('[GeminiService] JSON parse error: $parseError');
-          continue;
-        }
-      } on TimeoutException {
-        debugPrint('[GeminiService] Timeout on $modelName, trying next...');
-        continue;
-      } catch (e) {
-        if (_isFatalError(e)) {
-          debugPrint('[GeminiService] Fatal error, aborting: $e');
-          break;
-        }
-        if (_isQuotaError(e)) {
-          debugPrint('[GeminiService] Quota hit on $modelName, skipping...');
-          continue;
-        }
-        if (_isServerBusyError(e)) {
-          debugPrint(
-            '[GeminiService] Server busy on $modelName, waiting 3s...',
-          );
-          await Future.delayed(const Duration(seconds: 3));
-          try {
-            final model = _buildModel(modelName);
-            final bytes = await File(imagePath).readAsBytes();
-            final content = [
-              Content.multi([TextPart(prompt), DataPart(mimeType, bytes)]),
-            ];
-            final response = await model.generateContent(content).timeout(
-                  _timeout,
-                  onTimeout: () {
-                    throw TimeoutException('Retry timeout');
-                  },
-                );
-            final text = response.text;
-            if (text != null && text.trim().isNotEmpty) {
-              final cleaned = _cleanJson(text);
-              try {
-                final decoded = jsonDecode(cleaned);
-                if (decoded is List) return decoded;
-              } catch (_) {}
-            }
-          } catch (_) {
-            debugPrint('[GeminiService] Retry failed on $modelName');
-          }
-          continue;
-        }
-        debugPrint('[GeminiService] Error on $modelName: $e, skipping...');
-        continue;
-      }
+      final result = await _tryListWithKeysAndModel(
+        modelName,
+        (_) => [Content.multi([TextPart(prompt), DataPart(mimeType, bytes)])],
+      );
+      if (result != null) return result;
     }
 
-    debugPrint('[GeminiService] All models exhausted for prescription.');
+    debugPrint('[GeminiService] All models and keys exhausted for prescription.');
     return null;
   }
+
+  void rotateApiKey() => _rotateKey();
 }
