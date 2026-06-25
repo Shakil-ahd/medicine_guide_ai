@@ -40,7 +40,17 @@ class _PrescriptionScanScreenState extends State<PrescriptionScanScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const SizedBox(height: 10),
-                const CircularProgressIndicator(color: AppTheme.accentTeal),
+                const SizedBox(
+                  width: 140,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                    child: LinearProgressIndicator(
+                      color: AppTheme.accentTeal,
+                      backgroundColor: Color(0xFF1E293B),
+                      minHeight: 4,
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 24),
                 const Text(
                   'প্রেসক্রিপশন বিশ্লেষণ করা হচ্ছে...',

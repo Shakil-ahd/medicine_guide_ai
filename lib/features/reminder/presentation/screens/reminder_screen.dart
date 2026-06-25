@@ -33,8 +33,18 @@ class ReminderScreen extends StatelessWidget {
       body: BlocBuilder<ReminderBloc, ReminderState>(
         builder: (context, state) {
           if (state is ReminderLoading) {
-            return const Center(
-              child: CircularProgressIndicator(color: AppTheme.accentTeal),
+            return Center(
+              child: SizedBox(
+                width: 140,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: const LinearProgressIndicator(
+                    color: AppTheme.accentTeal,
+                    backgroundColor: Color(0xFF1E293B),
+                    minHeight: 4,
+                  ),
+                ),
+              ),
             );
           }
           if (state is ReminderError) {

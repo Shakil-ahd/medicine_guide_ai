@@ -253,11 +253,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                         child: _isSaving
                             ? const SizedBox(
-                                width: 22,
-                                height: 22,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2.5,
+                                width: 60,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.all(Radius.circular(2)),
+                                  child: LinearProgressIndicator(
+                                    color: Colors.white,
+                                    backgroundColor: Colors.white24,
+                                    minHeight: 3,
+                                  ),
                                 ),
                               )
                             : const Text(

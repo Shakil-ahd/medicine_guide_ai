@@ -43,11 +43,21 @@ class PrescriptionResultScreen extends StatelessWidget {
   }
 
   Widget _buildLoadingView() {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(color: AppTheme.accentIndigo),
+          SizedBox(
+            width: 140,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: const LinearProgressIndicator(
+                color: AppTheme.accentIndigo,
+                backgroundColor: Color(0xFF1E293B),
+                minHeight: 4,
+              ),
+            ),
+          ),
           SizedBox(height: 24),
           Text(
             'প্রেসক্রিপশন বিশ্লেষণ করা হচ্ছে...',

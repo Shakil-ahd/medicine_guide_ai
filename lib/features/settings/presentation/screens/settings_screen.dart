@@ -243,9 +243,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
+      return Scaffold(
         backgroundColor: AppTheme.darkBg,
-        body: Center(child: CircularProgressIndicator(color: AppTheme.accentTeal)),
+        body: Center(
+          child: SizedBox(
+            width: 140,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: const LinearProgressIndicator(
+                color: AppTheme.accentTeal,
+                backgroundColor: Color(0xFF1E293B),
+                minHeight: 4,
+              ),
+            ),
+          ),
+        ),
       );
     }
 
