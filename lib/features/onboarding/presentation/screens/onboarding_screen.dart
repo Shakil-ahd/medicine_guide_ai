@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medicine_guide_ai/core/constants/constants.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
 import 'package:medicine_guide_ai/core/services/database_helper.dart';
 import 'package:medicine_guide_ai/features/dashboard/presentation/bloc/navigation_bloc.dart';
@@ -101,7 +102,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                         const SizedBox(height: 20),
                         const Text(
-                          'মেডিসিন গাইড এআই',
+                          AppConstants.appName,
                           style: TextStyle(
                             fontSize: 26,
                             fontWeight: FontWeight.bold,
@@ -111,7 +112,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                         const SizedBox(height: 6),
                         const Text(
-                          'আপনার স্বাস্থ্য সহযোগী কৃত্রিম বুদ্ধিমত্তা',
+                          'আপনার নির্ভরযোগ্য স্বাস্থ্য নির্দেশিকা',
                           style: TextStyle(
                             fontSize: 14,
                             color: AppTheme.textSecondary,

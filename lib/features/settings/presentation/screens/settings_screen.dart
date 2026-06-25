@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medicine_guide_ai/core/constants/constants.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
 import 'package:medicine_guide_ai/core/services/database_helper.dart';
 import 'package:medicine_guide_ai/core/services/notification_service.dart';
@@ -287,7 +288,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const SizedBox(height: 12),
                 const Text(
-                  'ওষুধ নির্দেশিকা এআই',
+                  AppConstants.appName,
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,

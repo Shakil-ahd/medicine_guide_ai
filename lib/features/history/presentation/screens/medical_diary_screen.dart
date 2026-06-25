@@ -538,7 +538,7 @@ class _MedicalDiaryScreenState extends State<MedicalDiaryScreen> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          entry.isOffline ? 'অফলাইন' : 'এআই',
+                          entry.isOffline ? 'অফলাইন' : 'অনলাইন',
                           style: TextStyle(
                             fontSize: 10,
                             color: entry.isOffline

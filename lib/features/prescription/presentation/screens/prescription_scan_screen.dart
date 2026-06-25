@@ -360,7 +360,7 @@ class _PrescriptionScanScreenState extends State<PrescriptionScanScreen> {
                     );
               },
         icon: const Icon(Icons.auto_awesome_rounded),
-        label: const Text('এআই দিয়ে বিশ্লেষণ করুন'),
+        label: const Text('বিশ্লেষণ করুন'),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppTheme.accentIndigo,
           foregroundColor: Colors.white,

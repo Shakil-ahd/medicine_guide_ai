@@ -106,7 +106,7 @@ class _ScanResultScreenState extends State<ScanResultScreen>
             ),
             const SizedBox(height: 32),
             const Text(
-              "এআই বিশ্লেষণ করছে...",
+              "বিশ্লেষণ করা হচ্ছে...",
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -679,7 +679,7 @@ class _ClipRRectLoadingBarState extends State<ClipRRectLoadingBar>
         ),
         const SizedBox(height: 16),
         const Text(
-          "OCR → এআই প্রসেসিং → ফলাফল",
+          "ছবি স্ক্যান → প্রসেসিং → ফলাফল",
           style: TextStyle(
             color: AppTheme.textSecondary,
             fontSize: 12,

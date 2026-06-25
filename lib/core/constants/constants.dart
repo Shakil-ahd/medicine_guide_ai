@@ -1,5 +1,5 @@
 class AppConstants {
-  static const String appName = "মেডিসিন গাইড এআই";
+  static const String appName = "মেডি-সহায়িকা";
   static const String medicalDisclaimer = "এটি চিকিৎসকের বিকল্প নয়, সেবনের পূর্বে ডাক্তারের পরামর্শ নিন।";
   static const String scanMedicine = "ওষুধ স্ক্যান";
   static const String prescriptionReader = "প্রেসক্রিপশন রিডার";

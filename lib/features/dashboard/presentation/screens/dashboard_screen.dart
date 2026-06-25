@@ -241,7 +241,7 @@ class DashboardScreen extends StatelessWidget {
                 Icon(Icons.auto_awesome_rounded, color: AppTheme.accentTeal, size: 12),
                 SizedBox(width: 5),
                 Text(
-                  'AI চালিত',
+                  'ডিজিটাল সহায়িকা',
                   style: TextStyle(
                     color: AppTheme.accentTeal,
                     fontSize: 11,
@@ -258,7 +258,7 @@ class DashboardScreen extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           const Text(
-            'ওষুধের পাতা স্ক্যান করুন অথবা প্রেসক্রিপশন আপলোড করে এআই নির্দেশিকা পান।',
+            'ওষুধের পাতা স্ক্যান করুন অথবা প্রেসক্রিপশন আপলোড করে বিস্তারিত তথ্য ও নির্দেশিকা পান।',
             style: TextStyle(fontSize: 14, color: Colors.white70, height: 1.5),
           ),
         ],
@@ -389,7 +389,7 @@ class DashboardScreen extends StatelessWidget {
   Widget _buildHowToUse() {
     const steps = [
       (Icons.camera_alt_rounded, 'ছবি তুলুন', 'ওষুধের পাতা বা প্রেসক্রিপশনের ছবি নিন'),
-      (Icons.auto_awesome_rounded, 'এআই বিশ্লেষণ', 'এআই স্বয়ংক্রিয়ভাবে তথ্য বের করে'),
+      (Icons.auto_awesome_rounded, 'স্বয়ংক্রিয় বিশ্লেষণ', 'সিস্টেম স্বয়ংক্রিয়ভাবে তথ্য বের করে'),
       (Icons.info_rounded, 'ফলাফল দেখুন', 'ওষুধের বিস্তারিত তথ্য বাংলায় পড়ুন'),
     ];
 

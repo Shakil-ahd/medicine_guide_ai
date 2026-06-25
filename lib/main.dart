@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medicine_guide_ai/core/constants/constants.dart';
 import 'package:medicine_guide_ai/core/services/database_helper.dart';
 import 'package:medicine_guide_ai/core/services/notification_service.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
-import 'package:medicine_guide_ai/features/dashboard/presentation/bloc/navigation_bloc.dart';
-import 'package:medicine_guide_ai/features/dashboard/presentation/screens/dashboard_screen.dart';
-import 'package:medicine_guide_ai/features/onboarding/presentation/screens/onboarding_screen.dart';
+import 'package:medicine_guide_ai/features/splash/presentation/screens/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,15 +22,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'মেডিসিন গাইড এআই',
+      title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
-      home: onboardingCompleted
-          ? BlocProvider(
-              create: (context) => NavigationBloc(),
-              child: const DashboardScreen(),
-            )
-          : const OnboardingScreen(),
+      home: SplashScreen(onboardingCompleted: onboardingCompleted),
     );
   }
 }
