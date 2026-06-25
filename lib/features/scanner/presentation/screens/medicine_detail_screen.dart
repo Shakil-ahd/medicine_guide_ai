@@ -157,11 +157,13 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                 color: AppTheme.textSecondary,
               ),
               const SizedBox(width: 6),
-              Text(
-                medicine.manufacturer,
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: AppTheme.textSecondary,
+              Expanded(
+                child: Text(
+                  medicine.manufacturer,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppTheme.textSecondary,
+                  ),
                 ),
               ),
             ],
