@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:medicine_guide_ai/core/services/database_helper.dart';
 import 'package:medicine_guide_ai/features/prescription/domain/entities/prescription_medicine.dart';
 import 'package:medicine_guide_ai/features/history/domain/entities/history_entry.dart';

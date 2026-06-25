@@ -1,4 +1,4 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
+﻿import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:medicine_guide_ai/core/services/tts_service.dart';
 import 'package:medicine_guide_ai/features/scanner/domain/entities/medicine.dart';

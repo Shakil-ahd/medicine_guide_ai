@@ -1,4 +1,4 @@
-import 'package:medicine_guide_ai/core/services/database_helper.dart';
+﻿import 'package:medicine_guide_ai/core/services/database_helper.dart';
 import 'package:medicine_guide_ai/features/scanner/data/models/medicine_model.dart';
 
 abstract class MedicineLocalDataSource {
@@ -23,7 +23,6 @@ class MedicineLocalDataSourceImpl implements MedicineLocalDataSource {
     final results = await db.query('medicines');
     final cleanOcr = ocrText.toLowerCase();
 
-    // Sort results by name length descending to match the most specific name first
     final sortedRows = List<Map<String, dynamic>>.from(results);
     sortedRows.sort((a, b) {
       final nameA = (a['name'] as String? ?? '').length;
@@ -34,7 +33,6 @@ class MedicineLocalDataSourceImpl implements MedicineLocalDataSource {
     for (final row in sortedRows) {
       final name = (row['name'] as String? ?? '').toLowerCase();
       if (name.isNotEmpty) {
-        // Use word boundary to avoid false matching partial words (e.g. "losec" inside "losectil")
         final regExp = RegExp('\\b${RegExp.escape(name)}\\b');
         if (regExp.hasMatch(cleanOcr)) {
           return MedicineModel.fromDbMap(row);

@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -30,8 +30,8 @@ class _PrescriptionScanScreenState extends State<PrescriptionScanScreen> {
       barrierDismissible: false,
       builder: (dialogCtx) {
         _dialogContext = dialogCtx;
-        return WillPopScope(
-          onWillPop: () async => false,
+        return PopScope(
+          canPop: false,
           child: AlertDialog(
             backgroundColor: AppTheme.cardBg,
             shape: RoundedRectangleBorder(

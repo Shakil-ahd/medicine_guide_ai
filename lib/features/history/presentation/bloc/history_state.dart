@@ -1,4 +1,4 @@
-import 'package:equatable/equatable.dart';
+﻿import 'package:equatable/equatable.dart';
 import 'package:medicine_guide_ai/features/history/domain/entities/history_entry.dart';
 
 abstract class HistoryState extends Equatable {

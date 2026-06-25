@@ -1,3 +1,4 @@
+﻿import 'package:flutter/foundation.dart';
 import 'package:medicine_guide_ai/core/errors/failures.dart';
 import 'package:medicine_guide_ai/core/services/ocr_service.dart';
 import 'package:medicine_guide_ai/features/scanner/data/datasources/medicine_local_datasource.dart';
@@ -24,7 +25,7 @@ class MedicineRepositoryImpl implements MedicineRepository {
   ) async {
     try {
       final ocrText = await _ocrService.recognizeText(imagePath);
-      print("OCR Text: $ocrText");
+      debugPrint("[Repository] OCR Text: $ocrText");
 
       if (ocrText.trim().isEmpty) {
         return (
@@ -40,7 +41,11 @@ class MedicineRepositoryImpl implements MedicineRepository {
         ocrText,
       );
       if (cachedMedicine != null) {
-        await _localDataSource.saveScanLog(cachedMedicine.name, true, imagePath);
+        await _localDataSource.saveScanLog(
+          cachedMedicine.name,
+          true,
+          imagePath,
+        );
         return (null, cachedMedicine);
       }
 
@@ -64,7 +69,7 @@ class MedicineRepositoryImpl implements MedicineRepository {
 
       return (null, remoteMedicine);
     } catch (e) {
-      print("Repository Error: $e");
+      debugPrint("[Repository] Error: $e");
       final msg = e.toString().toLowerCase();
       if (msg.contains('quota') ||
           msg.contains('429') ||

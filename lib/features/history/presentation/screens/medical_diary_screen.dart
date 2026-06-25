@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
@@ -219,7 +219,6 @@ class _MedicalDiaryScreenState extends State<MedicalDiaryScreen> {
                   padding: const EdgeInsets.all(12),
                   child: Row(
                     children: [
-                      // Large prescription image
                       GestureDetector(
                         onTap: fileExists ? () => _showImageDialog(context, entry.imagePath!) : null,
                         child: Hero(
@@ -249,7 +248,6 @@ class _MedicalDiaryScreenState extends State<MedicalDiaryScreen> {
                         ),
                       ),
                       const SizedBox(width: 14),
-                      // Details beside the image
                       Expanded(
                         child: GestureDetector(
                           behavior: HitTestBehavior.opaque,
@@ -318,7 +316,6 @@ class _MedicalDiaryScreenState extends State<MedicalDiaryScreen> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      // Expand / Show icon button
                       TextButton.icon(
                         style: TextButton.styleFrom(
                           foregroundColor: isExpanded ? AppTheme.accentIndigo : AppTheme.accentTeal,
@@ -362,7 +359,6 @@ class _MedicalDiaryScreenState extends State<MedicalDiaryScreen> {
                     ],
                   ),
                 ),
-                // Expanded list of medicines
                 if (isExpanded) ...[
                   const Divider(color: Color(0xFF263238), height: 1),
                   Padding(

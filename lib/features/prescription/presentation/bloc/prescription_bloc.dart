@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medicine_guide_ai/core/services/database_helper.dart';
 import 'package:medicine_guide_ai/core/services/gemini_service.dart';
@@ -58,7 +58,6 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
 
       if (_isCancelled) return;
 
-      // Save medicines to the local medicines table for details lookup
       final dbHelper = DatabaseHelper.instance;
       for (final med in medicines) {
         if (med.name.trim().isNotEmpty) {
@@ -79,7 +78,6 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
         }
       }
 
-      // Save a single history entry for the entire scanned prescription
       final medicinesJson = jsonEncode(medicines.map((m) => {
         'name': m.name,
         'purpose': m.purpose,

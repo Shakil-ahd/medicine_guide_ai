@@ -33,8 +33,15 @@ android {
 
     buildTypes {
         release {
+            // Shrink code & resources → smaller APK, harder to reverse-engineer
+            isMinifyEnabled = true
+            isShrinkResources = true
             signingConfig = signingConfigs.getByName("debug")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+        debug {
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }

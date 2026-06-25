@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medicine_guide_ai/core/constants/constants.dart';
@@ -95,7 +95,6 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Combined Prescription and Scanner Logo with animates laser line
                     Container(
                       width: 120,
                       height: 120,
@@ -116,7 +115,6 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                           return Stack(
                             alignment: Alignment.center,
                             children: [
-                              // Background circular outline
                               Container(
                                 width: 100,
                                 height: 100,
@@ -128,19 +126,16 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                                   ),
                                 ),
                               ),
-                              // Prescription Document Icon
                               const Icon(
                                 Icons.description_rounded,
                                 size: 48,
                                 color: Colors.white,
                               ),
-                              // Scanner Frame Icon
                               const Icon(
                                 Icons.document_scanner_outlined,
                                 size: 80,
                                 color: AppTheme.accentTeal,
                               ),
-                              // Animated Laser line
                               Positioned(
                                 top: _laserAnimation.value,
                                 left: 24,
@@ -166,7 +161,6 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                       ),
                     ),
                     const SizedBox(height: 28),
-                    // App title
                     const Text(
                       AppConstants.appName,
                       style: TextStyle(
@@ -184,7 +178,6 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                       ),
                     ),
                     const SizedBox(height: 8),
-                    // Subtitle
                     const Text(
                       'আপনার নির্ভরযোগ্য স্বাস্থ্য নির্দেশিকা',
                       style: TextStyle(
@@ -194,7 +187,6 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                       ),
                     ),
                     const SizedBox(height: 48),
-                    // Sleek progress bar
                     SizedBox(
                       width: 140,
                       child: ClipRRect(

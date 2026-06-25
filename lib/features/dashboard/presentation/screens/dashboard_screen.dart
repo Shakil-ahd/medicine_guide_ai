@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:medicine_guide_ai/core/constants/constants.dart';
@@ -524,14 +524,16 @@ class DashboardScreen extends StatelessWidget {
           final picker = ImagePicker();
           final image = await picker.pickImage(
             source: source,
-            imageQuality: 50,
-            maxWidth: 1000,
+            imageQuality: 80,
+            maxWidth: 1400,
           );
           if (image != null && context.mounted) {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (routeCtx) => BlocProvider(
+              PageRouteBuilder(
+                transitionDuration: const Duration(milliseconds: 300),
+                pageBuilder: (routeCtx, animation, secondaryAnimation) =>
+                    BlocProvider(
                   create: (_) => MedicineBloc(
                     repository: MedicineRepositoryImpl(
                       ocrService: OcrService(),
@@ -542,6 +544,19 @@ class DashboardScreen extends StatelessWidget {
                   ),
                   child: ScanResultScreen(imagePath: image.path),
                 ),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                  return SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(1.0, 0.0),
+                      end: Offset.zero,
+                    ).animate(CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    )),
+                    child: child,
+                  );
+                },
               ),
             );
           }

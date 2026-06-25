@@ -1,4 +1,4 @@
-import 'package:medicine_guide_ai/features/reminder/domain/entities/reminder.dart';
+﻿import 'package:medicine_guide_ai/features/reminder/domain/entities/reminder.dart';
 
 abstract class ReminderRepository {
   Future<List<Reminder>> getReminders();

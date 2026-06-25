@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
 
 class ScannerLoader extends StatefulWidget {
@@ -64,7 +64,6 @@ class _ScannerLoaderState extends State<ScannerLoader> with SingleTickerProvider
           return Stack(
             alignment: Alignment.center,
             children: [
-              // Background circular outline
               Container(
                 width: outlineSize,
                 height: outlineSize,
@@ -76,19 +75,16 @@ class _ScannerLoaderState extends State<ScannerLoader> with SingleTickerProvider
                   ),
                 ),
               ),
-              // Prescription Document Icon
               Icon(
                 Icons.description_rounded,
                 size: docIconSize,
                 color: Colors.white,
               ),
-              // Scanner Frame Icon
               Icon(
                 Icons.document_scanner_outlined,
                 size: frameSize,
                 color: AppTheme.accentTeal,
               ),
-              // Animated Laser line
               Positioned(
                 top: _laserAnimation.value,
                 left: laserPadding,

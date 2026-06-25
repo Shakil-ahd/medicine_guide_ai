@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
 import 'package:medicine_guide_ai/core/widgets/scanner_loader.dart';
@@ -25,12 +25,6 @@ class ReminderScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.darkBg,
-      // appBar: AppBar(
-      //   title: const Text('মেডিসিন রিমাইন্ডার'),
-      //   backgroundColor: AppTheme.darkBg,
-      //   elevation: 0,
-      //   centerTitle: true,
-      // ),
       body: BlocBuilder<ReminderBloc, ReminderState>(
         builder: (context, state) {
           if (state is ReminderLoading) {

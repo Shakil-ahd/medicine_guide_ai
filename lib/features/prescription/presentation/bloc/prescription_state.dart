@@ -1,4 +1,4 @@
-import 'package:equatable/equatable.dart';
+﻿import 'package:equatable/equatable.dart';
 import 'package:medicine_guide_ai/features/prescription/domain/entities/prescription_medicine.dart';
 
 abstract class PrescriptionState extends Equatable {
