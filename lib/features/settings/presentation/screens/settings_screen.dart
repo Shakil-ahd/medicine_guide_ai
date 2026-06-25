@@ -1,76 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medicine_guide_ai/core/constants/constants.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
-import 'package:medicine_guide_ai/core/services/database_helper.dart';
-import 'package:medicine_guide_ai/core/services/notification_service.dart';
-import 'package:medicine_guide_ai/core/widgets/scanner_loader.dart';
-import 'package:medicine_guide_ai/features/onboarding/presentation/screens/onboarding_screen.dart';
-import 'package:medicine_guide_ai/features/history/presentation/bloc/history_bloc.dart';
-import 'package:medicine_guide_ai/features/history/presentation/bloc/history_event.dart';
-import 'package:medicine_guide_ai/features/reminder/presentation/bloc/reminder_bloc.dart';
-import 'package:medicine_guide_ai/features/reminder/presentation/bloc/reminder_event.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
-
-  @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
-}
-
-class _SettingsScreenState extends State<SettingsScreen> {
-  double _ttsSpeed = 0.5;
-  bool _smartNotifications = true;
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSettings();
-  }
-
-  Future<void> _loadSettings() async {
-    try {
-      final speed = await DatabaseHelper.instance.getSetting('tts_speed');
-      final notif = await DatabaseHelper.instance.getSetting('smart_notifications');
-      
-      setState(() {
-        if (speed != null) {
-          _ttsSpeed = double.tryParse(speed) ?? 0.5;
-        }
-        if (notif != null) {
-          _smartNotifications = notif == 'true';
-        }
-        _isLoading = false;
-      });
-    } catch (_) {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  Future<void> _saveTtsSpeed(double value) async {
-    setState(() {
-      _ttsSpeed = value;
-    });
-    await DatabaseHelper.instance.saveSetting('tts_speed', value.toStringAsFixed(2));
-  }
-
-  Future<void> _saveNotifications(bool value) async {
-    setState(() {
-      _smartNotifications = value;
-    });
-    await DatabaseHelper.instance.saveSetting('smart_notifications', value ? 'true' : 'false');
-  }
-
-  String _getSpeedLabel(double speed) {
-    if (speed <= 0.35) return 'খুব ধীর';
-    if (speed <= 0.45) return 'ধীর';
-    if (speed <= 0.55) return 'স্বাভাবিক';
-    if (speed <= 0.65) return 'দ্রুত';
-    return 'খুব দ্রুত';
-  }
 
   void _showDisclaimer(BuildContext context) {
     showDialog(
@@ -109,18 +42,133 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _showUserGuide(BuildContext context) {
+  void _showAboutApp(BuildContext context) {
     showDialog(
       context: context,
       builder: (dialogCtx) => AlertDialog(
         backgroundColor: AppTheme.cardBg,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.help_outline_rounded, color: AppTheme.accentTeal, size: 24),
-            SizedBox(width: 10),
-            Text(
-              'অ্যাপ ব্যবহার নির্দেশিকা',
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: AppTheme.accentTeal.withAlpha(20),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.info_outline_rounded, color: AppTheme.accentTeal, size: 20),
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              'অ্যাপ পরিচিতি',
+              style: TextStyle(
+                color: AppTheme.textPrimary,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 70,
+                  height: 70,
+                  decoration: BoxDecoration(
+                    color: AppTheme.accentTeal.withAlpha(15),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppTheme.accentTeal.withAlpha(40), width: 1.5),
+                  ),
+                  child: const Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Icon(Icons.description_rounded, size: 28, color: Colors.white),
+                      Icon(Icons.document_scanner_outlined, size: 48, color: AppTheme.accentTeal),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Center(
+                child: Text(
+                  '${AppConstants.appName}\nআপনার ডিজিটাল স্বাস্থ্য সহায়িকা',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'মেডি-সহায়িকা একটি অত্যাধুনিক মোবাইল অ্যাপ্লিকেশন যা আপনার প্রেসক্রিপশন ও ওষুধ বিশ্লেষণের জন্য তৈরি। এটি চিকিৎসকের প্রেসক্রিপশন বাংলায় অনুবাদ করতে পারে এবং যেকোনো ওষুধের দাম ও তথ্য সরবরাহ করে।',
+                style: TextStyle(color: AppTheme.textSecondary, height: 1.5, fontSize: 13),
+              ),
+              const SizedBox(height: 16),
+              const Divider(color: Color(0xFF263238)),
+              const SizedBox(height: 10),
+              _buildHighlightRow(Icons.offline_bolt_rounded, 'অফলাইন ডেটাবেস', 'ইন্টারনেট ছাড়াও পূর্বে স্ক্যান করা ওষুধ দেখতে পাবেন।'),
+              const SizedBox(height: 12),
+              _buildHighlightRow(Icons.alarm_on_rounded, 'এক্স্যাক্ট রিমাইন্ডার', 'সঠিক সময়ে ওষুধ সেবনের রিমাইন্ডার ও নোটিফিকেশন।'),
+              const SizedBox(height: 12),
+              _buildHighlightRow(Icons.monetization_on_rounded, 'বিকল্প ব্র্যান্ড ও দাম', 'যেকোনো ওষুধের প্রকৃত দাম এবং বিকল্প সাশ্রয়ী ব্র্যান্ড।'),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogCtx),
+            child: const Text('বন্ধ করুন', style: TextStyle(color: AppTheme.accentTeal, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHighlightRow(IconData icon, String title, String desc) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: AppTheme.accentTeal, size: 18),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold, fontSize: 12)),
+              const SizedBox(height: 2),
+              Text(desc, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11, height: 1.3)),
+            ],
+          ),
+        )
+      ],
+    );
+  }
+
+  void _showHowToUse(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        backgroundColor: AppTheme.cardBg,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: AppTheme.accentIndigo.withAlpha(20),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.menu_book_rounded, color: AppTheme.accentIndigo, size: 20),
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              'কীভাবে ব্যবহার করবেন',
               style: TextStyle(
                 color: AppTheme.textPrimary,
                 fontWeight: FontWeight.bold,
@@ -134,22 +182,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Text(
+                'মেডি-সহায়িকা অ্যাপটি খুব সহজে ব্যবহার করার পদ্ধতি নিচে দেওয়া হলো:',
+                style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
+              ),
+              SizedBox(height: 16),
               _GuideStep(
                 stepNum: '১',
-                title: 'ওষুধ স্ক্যানিং',
-                desc: 'হোম পেজ থেকে ক্যামেরা দিয়ে যেকোনো ওষুধের খাপ বা পাতার লেখা স্পষ্ট ছবি তুলুন। অ্যাপটি অফলাইন ডাটাবেজ এবং কৃত্রিম বুদ্ধিমত্তার মাধ্যমে ওষুধটির কার্যকারিতা, খাবার নিয়ম ও বিকল্প ওষুধের তালিকা দেখাবে।',
+                title: 'ওষুধ স্ক্যান করুন',
+                desc: 'হোম পেজের ক্যামেরা বোতাম চেপে যেকোনো ওষুধের পাতার পরিষ্কার ছবি তুলুন। অ্যাপটি অফলাইন ডেটাবেস ও এআই-এর মাধ্যমে ওষুধের ব্যবহার, মূল্য এবং বিকল্প সাশ্রয়ী ব্র্যান্ড দেখাবে।',
               ),
-              SizedBox(height: 12),
+              SizedBox(height: 14),
               _GuideStep(
                 stepNum: '২',
                 title: 'প্রেসক্রিপশন রিডার',
-                desc: 'ডাক্তারের হাতের লেখা প্রেসক্রিপশন স্ক্যান করে কোন ওষুধ কোন সময় খেতে হবে তার একটি সহজ বাংলা তালিকা দেখতে পাবেন।',
+                desc: 'প্রেসক্রিপশন স্ক্যানার আইকনে চাপ দিয়ে প্রেসক্রিপশনের সোজা ও পরিষ্কার ছবি তুলুন। ছবি বিশ্লেষণ সম্পন্ন হলে চিহ্নিত ওষুধের তালিকা এবং ডোজ বাংলায় দেখতে পাবেন।',
               ),
-              SizedBox(height: 12),
+              SizedBox(height: 14),
               _GuideStep(
                 stepNum: '৩',
-                title: 'রিমাইন্ডার সেট করা',
-                desc: 'রিমাইন্ডার ট্যাপ থেকে ওষুধের নাম ও সময়সূচী নির্ধারণ করে রাখুন। নির্দিষ্ট সময়ে নোটিফিকেশনের মাধ্যমে আপনাকে ওষুধ খাওয়ার কথা মনে করিয়ে দেওয়া হবে।',
+                title: 'ওষুধের অ্যালার্ম (রিমাইন্ডার)',
+                desc: 'রিমাইন্ডার অপশন থেকে ওষুধ সেবনের দিন ও সময় নির্ধারণ করুন। নোটিফিকেশনের মাধ্যমে নির্দিষ্ট সময়ে আপনাকে ওষুধ খাওয়ার কথা মনে করিয়ে দেওয়া হবে।',
+              ),
+              SizedBox(height: 14),
+              _GuideStep(
+                stepNum: '৪',
+                title: 'ছবি তোলার সেরা টিপস',
+                desc: 'ছবি তোলার সময় পর্যাপ্ত আলো রাখুন, ক্যামেরা সোজা রাখুন এবং হাত কাঁপানো থেকে বিরত থাকুন যাতে সব অক্ষর পরিষ্কার বোঝা যায়।',
               ),
             ],
           ),
@@ -157,84 +216,76 @@ class _SettingsScreenState extends State<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogCtx),
-            child: const Text('বুঝেছি', style: TextStyle(color: AppTheme.accentTeal, fontWeight: FontWeight.bold)),
+            child: const Text('বন্ধ করুন', style: TextStyle(color: AppTheme.accentTeal, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
     );
   }
 
-  void _confirmResetData(BuildContext context) {
+  void _showInstructions(BuildContext context) {
     showDialog(
       context: context,
       builder: (dialogCtx) => AlertDialog(
         backgroundColor: AppTheme.cardBg,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('সব ডেটা মুছুন'),
-        content: const Text(
-          'আপনি কি নিশ্চিত যে আপনি আপনার সমস্ত স্ক্যান ইতিহাস এবং মেডিসিন রিমাইন্ডার মুছে ফেলতে চান? এটি আর ফিরিয়ে আনা যাবে না।',
-          style: TextStyle(color: AppTheme.textSecondary),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: AppTheme.accentTeal.withAlpha(20),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.fact_check_rounded, color: AppTheme.accentTeal, size: 20),
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              'সাধারণ নির্দেশনা',
+              style: TextStyle(
+                color: AppTheme.textPrimary,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+          ],
+        ),
+        content: const SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'সুস্থ ও সুরক্ষিত থাকার জন্য নিচের নির্দেশনাবলী অনুসরণ করুন:',
+                style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
+              ),
+              SizedBox(height: 16),
+              _InstructionItem(
+                icon: Icons.personal_injury_rounded,
+                text: 'অ্যাপের যেকোনো তথ্য শুধুমাত্র আপনার সাধারণ জ্ঞান বৃদ্ধির জন্য। যেকোনো জরুরি চিকিৎসায় সরাসরি ডাক্তারের সাথে যোগাযোগ করুন।',
+              ),
+              SizedBox(height: 12),
+              _InstructionItem(
+                icon: Icons.medication_liquid_rounded,
+                text: 'ডোজ অনুযায়ী ওষুধ খাওয়ার সঠিক সময় ঠিক রাখতে রিমাইন্ডার ফিচারটি ব্যবহার করুন এবং অ্যালার্ম মিস করবেন না।',
+              ),
+              SizedBox(height: 12),
+              _InstructionItem(
+                icon: Icons.cancel_presentation_rounded,
+                text: 'কোনো ওষুধ সেবনের পর কোনো ধরনের পার্শ্বপ্রতিক্রিয়া দেখা দিলে তাৎক্ষণিকভাবে সেই ওষুধ সেবন বন্ধ করুন ও চিকিৎসকের পরামর্শ নিন।',
+              ),
+              SizedBox(height: 12),
+              _InstructionItem(
+                icon: Icons.severe_cold_rounded,
+                text: 'ওষুধ সবসময় আলো ও আর্দ্রতা থেকে দূরে, শীতল ও শুষ্ক স্থানে এবং শিশুদের নাগালের বাইরে রাখুন।',
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogCtx),
-            child: const Text('বাতিল', style: TextStyle(color: AppTheme.textSecondary)),
-          ),
-          TextButton(
-            onPressed: () async {
-              final historyBloc = context.read<HistoryBloc>();
-              final reminderBloc = context.read<ReminderBloc>();
-              final messenger = ScaffoldMessenger.of(context);
-              final navigator = Navigator.of(dialogCtx);
-              
-              final db = await DatabaseHelper.instance.database;
-              await db.delete('reminders');
-              await NotificationService.instance.cancelAll();
-              
-              historyBloc.add(ClearHistoryEvent());
-              reminderBloc.add(LoadRemindersEvent());
-              
-              navigator.pop();
-              messenger.showSnackBar(
-                const SnackBar(content: Text('সমস্ত হিস্ট্রি ও রিমাইন্ডার মুছে ফেলা হয়েছে।')),
-              );
-            },
-            child: const Text('মুছে ফেলুন', style: TextStyle(color: AppTheme.warningRed, fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _confirmResetOnboarding(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (dialogCtx) => AlertDialog(
-        backgroundColor: AppTheme.cardBg,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('অনবোর্ডিং স্ক্রিন দেখুন'),
-        content: const Text(
-          'এটি আপনাকে আবার অনবোর্ডিং এবং সতর্কীকরণ গ্রহণ করার স্বাগতম স্ক্রিনে নিয়ে যাবে।',
-          style: TextStyle(color: AppTheme.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogCtx),
-            child: const Text('বাতিল', style: TextStyle(color: AppTheme.textSecondary)),
-          ),
-          TextButton(
-            onPressed: () async {
-              await DatabaseHelper.instance.saveSetting('onboarding_completed', 'false');
-              if (context.mounted) {
-                Navigator.pop(dialogCtx);
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (_) => const OnboardingScreen()),
-                  (route) => false,
-                );
-              }
-            },
-            child: const Text('রিসেট', style: TextStyle(color: AppTheme.accentTeal, fontWeight: FontWeight.bold)),
+            child: const Text('বন্ধ করুন', style: TextStyle(color: AppTheme.accentTeal, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -243,15 +294,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Scaffold(
-        backgroundColor: AppTheme.darkBg,
-        body: Center(
-          child: ScannerLoader(size: 100),
-        ),
-      );
-    }
-
     return Scaffold(
       backgroundColor: AppTheme.darkBg,
       body: ListView(
@@ -312,140 +354,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
           
           const SizedBox(height: 24),
           
-          _buildSectionHeader('অ্যাপ সেটিংস'),
-          _buildSettingsCard(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: AppTheme.accentTeal.withAlpha(15),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.record_voice_over_rounded, color: AppTheme.accentTeal, size: 20),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'কথা বলার গতি (Voice Speed)',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppTheme.textPrimary,
-                                ),
-                              ),
-                              Text(
-                                'গতি: ${_ttsSpeed.toStringAsFixed(1)} (${_getSpeedLabel(_ttsSpeed)})',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: AppTheme.textSecondary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    SliderTheme(
-                      data: SliderTheme.of(context).copyWith(
-                        activeTrackColor: AppTheme.accentTeal,
-                        inactiveTrackColor: const Color(0xFF263238),
-                        thumbColor: AppTheme.accentTeal,
-                        overlayColor: AppTheme.accentTeal.withAlpha(30),
-                        trackHeight: 3,
-                        valueIndicatorShape: const PaddleSliderValueIndicatorShape(),
-                        valueIndicatorColor: AppTheme.cardBg,
-                        valueIndicatorTextStyle: const TextStyle(color: Colors.white),
-                      ),
-                      child: Slider(
-                        value: _ttsSpeed,
-                        min: 0.3,
-                        max: 0.8,
-                        divisions: 5,
-                        onChanged: _saveTtsSpeed,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              _buildDivider(),
-              SwitchListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                secondary: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: AppTheme.accentIndigo.withAlpha(15),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.alarm_rounded, color: AppTheme.accentIndigo, size: 20),
-                ),
-                title: const Text(
-                  'মেডিসিন নোটিফিকেশন',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
-                ),
-                subtitle: const Text(
-                  'ওষুধ খাওয়ার সময়ে রিমাইন্ডার এলার্ট পান',
-                  style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
-                ),
-                value: _smartNotifications,
-                activeTrackColor: AppTheme.accentTeal,
-                onChanged: _saveNotifications,
-              ),
-            ],
-          ),
-          
-          const SizedBox(height: 20),
-          
           _buildSectionHeader('সহায়তা ও তথ্য'),
           _buildSettingsCard(
             children: [
               _buildSettingsTile(
-                icon: Icons.help_outline_rounded,
+                icon: Icons.info_outline_rounded,
                 iconColor: AppTheme.accentTeal,
-                title: 'ব্যবহার সহায়িকা',
-                subtitle: 'অ্যাপ কীভাবে ব্যবহার করবেন তা জানুন',
-                onTap: () => _showUserGuide(context),
+                title: 'অ্যাপ পরিচিতি (About)',
+                subtitle: 'মেডি-সহায়িকা অ্যাপ সম্পর্কে জানুন',
+                onTap: () => _showAboutApp(context),
+              ),
+              _buildDivider(),
+              _buildSettingsTile(
+                icon: Icons.menu_book_rounded,
+                iconColor: AppTheme.accentIndigo,
+                title: 'কীভাবে ব্যবহার করবেন (How to Use)',
+                subtitle: 'ফিচারসমূহের ব্যবহার প্রণালী ও টিপস',
+                onTap: () => _showHowToUse(context),
+              ),
+              _buildDivider(),
+              _buildSettingsTile(
+                icon: Icons.fact_check_rounded,
+                iconColor: AppTheme.accentTeal,
+                title: 'সাধারণ নির্দেশনা (Instructions)',
+                subtitle: 'স্বাস্থ্য সুরক্ষা ও সাধারণ নিয়মাবলী',
+                onTap: () => _showInstructions(context),
               ),
               _buildDivider(),
               _buildSettingsTile(
                 icon: Icons.warning_amber_rounded,
                 iconColor: AppTheme.warningRed,
-                title: 'মেডিকেল সতর্কীকরণ',
-                subtitle: 'চিকিৎসা সংক্রান্ত সতর্কতা ও দায়মুক্তি দেখুন',
+                title: 'মেডিকেল সতর্কীকরণ (Disclaimer)',
+                subtitle: 'চিকিৎসা সংক্রান্ত সতর্কতা ও দায়মুক্তি',
                 onTap: () => _showDisclaimer(context),
-              ),
-            ],
-          ),
-          
-          const SizedBox(height: 20),
-          
-          _buildSectionHeader('রিসেট'),
-          _buildSettingsCard(
-            children: [
-              _buildSettingsTile(
-                icon: Icons.refresh_rounded,
-                iconColor: AppTheme.accentIndigo,
-                title: 'অনবোর্ডিং আবার দেখুন',
-                subtitle: 'স্বাগতম ও নিয়মাবলী স্ক্রিনে ফিরে যান',
-                onTap: () => _confirmResetOnboarding(context),
-              ),
-              _buildDivider(),
-              _buildSettingsTile(
-                icon: Icons.delete_forever_rounded,
-                iconColor: AppTheme.warningRed,
-                title: 'অ্যাপ ডেটা মুছুন',
-                subtitle: 'রিমাইন্ডার এবং স্ক্যানিং ইতিহাস খালি করুন',
-                onTap: () => _confirmResetData(context),
               ),
             ],
           ),
@@ -621,6 +562,34 @@ class _GuideStep extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _InstructionItem extends StatelessWidget {
+  final IconData icon;
+  final String text;
+
+  const _InstructionItem({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: AppTheme.accentTeal, size: 20),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppTheme.textSecondary,
+              height: 1.4,
+            ),
           ),
         ),
       ],
