@@ -4,7 +4,7 @@ import 'package:medicine_guide_ai/features/scanner/data/models/medicine_model.da
 abstract class MedicineLocalDataSource {
   Future<void> cacheMedicine(MedicineModel medicine);
   Future<MedicineModel?> getCachedMedicineByOcrText(String ocrText);
-  Future<void> saveScanLog(String medicineName, bool isOffline);
+  Future<void> saveScanLog(String medicineName, bool isOffline, String? imagePath);
 }
 
 class MedicineLocalDataSourceImpl implements MedicineLocalDataSource {
@@ -45,11 +45,12 @@ class MedicineLocalDataSourceImpl implements MedicineLocalDataSource {
   }
 
   @override
-  Future<void> saveScanLog(String medicineName, bool isOffline) async {
+  Future<void> saveScanLog(String medicineName, bool isOffline, String? imagePath) async {
     await _dbHelper.insertHistory({
       'medicineName': medicineName,
       'scannedAt': DateTime.now().toIso8601String(),
       'isOffline': isOffline ? 1 : 0,
+      'imagePath': imagePath,
     });
   }
 }

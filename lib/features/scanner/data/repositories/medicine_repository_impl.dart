@@ -40,7 +40,7 @@ class MedicineRepositoryImpl implements MedicineRepository {
         ocrText,
       );
       if (cachedMedicine != null) {
-        await _localDataSource.saveScanLog(cachedMedicine.name, true);
+        await _localDataSource.saveScanLog(cachedMedicine.name, true, imagePath);
         return (null, cachedMedicine);
       }
 
@@ -59,7 +59,7 @@ class MedicineRepositoryImpl implements MedicineRepository {
       }
 
       await _localDataSource.cacheMedicine(remoteMedicine);
-      await _localDataSource.saveScanLog(remoteMedicine.name, false);
+      await _localDataSource.saveScanLog(remoteMedicine.name, false, imagePath);
 
       return (null, remoteMedicine);
     } catch (e) {

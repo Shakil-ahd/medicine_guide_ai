@@ -450,7 +450,7 @@ class _MedicalDiaryScreenState extends State<MedicalDiaryScreen> {
           );
         }
 
-        // Regular Scanned Medicine layout
+        final fileExists = entry.imagePath != null && File(entry.imagePath!).existsSync();
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
@@ -465,23 +465,41 @@ class _MedicalDiaryScreenState extends State<MedicalDiaryScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: Row(
                 children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: entry.isOffline
-                          ? AppTheme.accentTeal.withAlpha(15)
-                          : AppTheme.accentIndigo.withAlpha(15),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      entry.isOffline
-                          ? Icons.offline_pin_rounded
-                          : Icons.cloud_done_rounded,
-                      color: entry.isOffline
-                          ? AppTheme.accentTeal
-                          : AppTheme.accentIndigo,
-                      size: 22,
+                  GestureDetector(
+                    onTap: fileExists ? () => _showImageDialog(context, entry.imagePath!) : null,
+                    child: Hero(
+                      tag: 'medicine_img_${entry.id}',
+                      child: Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E293B),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFF263238)),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(9),
+                          child: fileExists
+                              ? Image.file(
+                                  File(entry.imagePath!),
+                                  fit: BoxFit.cover,
+                                )
+                              : Container(
+                                  color: entry.isOffline
+                                      ? AppTheme.accentTeal.withAlpha(15)
+                                      : AppTheme.accentIndigo.withAlpha(15),
+                                  child: Icon(
+                                    entry.isOffline
+                                        ? Icons.offline_pin_rounded
+                                        : Icons.cloud_done_rounded,
+                                    color: entry.isOffline
+                                        ? AppTheme.accentTeal
+                                        : AppTheme.accentIndigo,
+                                    size: 22,
+                                  ),
+                                ),
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 14),
