@@ -5,6 +5,7 @@ import 'package:medicine_guide_ai/core/constants/constants.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
 import 'package:medicine_guide_ai/features/scanner/presentation/bloc/medicine_bloc.dart';
 import 'package:medicine_guide_ai/features/scanner/domain/entities/medicine.dart';
+import 'package:medicine_guide_ai/core/widgets/scanner_loader.dart';
 
 class ScanResultScreen extends StatefulWidget {
   final String imagePath;
@@ -15,27 +16,16 @@ class ScanResultScreen extends StatefulWidget {
   State<ScanResultScreen> createState() => _ScanResultScreenState();
 }
 
-class _ScanResultScreenState extends State<ScanResultScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _pulseController;
-  late Animation<double> _pulseAnimation;
+class _ScanResultScreenState extends State<ScanResultScreen> {
 
   @override
   void initState() {
     super.initState();
-    _pulseController = AnimationController(
-      duration: const Duration(seconds: 1),
-      vsync: this,
-    )..repeat(reverse: true);
-    _pulseAnimation = Tween<double>(begin: 0.85, end: 1.0).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
     context.read<MedicineBloc>().add(ScanMedicineEvent(widget.imagePath));
   }
 
   @override
   void dispose() {
-    _pulseController.dispose();
     super.dispose();
   }
 
@@ -71,41 +61,15 @@ class _ScanResultScreenState extends State<ScanResultScreen>
   }
 
   Widget _buildLoadingView() {
-    return Center(
+    return const Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ScaleTransition(
-              scale: _pulseAnimation,
-              child: Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: const LinearGradient(
-                    colors: [AppTheme.accentTeal, AppTheme.accentIndigo],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.accentTeal.withAlpha(80),
-                      blurRadius: 30,
-                      spreadRadius: 5,
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.document_scanner_rounded,
-                  color: Colors.white,
-                  size: 48,
-                ),
-              ),
-            ),
-            const SizedBox(height: 32),
-            const Text(
+            ScannerLoader(size: 100),
+            SizedBox(height: 32),
+            Text(
               "বিশ্লেষণ করা হচ্ছে...",
               style: TextStyle(
                 fontSize: 20,
@@ -113,8 +77,8 @@ class _ScanResultScreenState extends State<ScanResultScreen>
                 color: AppTheme.textPrimary,
               ),
             ),
-            const SizedBox(height: 12),
-            const Text(
+            SizedBox(height: 12),
+            Text(
               "ওষুধের তথ্য সংগ্রহ করা হচ্ছে\nঅনুগ্রহ করে অপেক্ষা করুন",
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -123,8 +87,6 @@ class _ScanResultScreenState extends State<ScanResultScreen>
                 height: 1.6,
               ),
             ),
-            const SizedBox(height: 32),
-            ClipRRectLoadingBar(),
           ],
         ),
       ),
@@ -616,76 +578,4 @@ class _ScanResultScreenState extends State<ScanResultScreen>
   }
 }
 
-class ClipRRectLoadingBar extends StatefulWidget {
-  const ClipRRectLoadingBar({super.key});
 
-  @override
-  State<ClipRRectLoadingBar> createState() => _ClipRRectLoadingBarState();
-}
-
-class _ClipRRectLoadingBarState extends State<ClipRRectLoadingBar>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    )..repeat();
-    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        AnimatedBuilder(
-          animation: _animation,
-          builder: (context, child) {
-            return Container(
-              width: 200,
-              height: 4,
-              decoration: BoxDecoration(
-                color: const Color(0xFF263238),
-                borderRadius: BorderRadius.circular(2),
-              ),
-              child: Align(
-                alignment: Alignment(
-                  -1.0 + _animation.value * 2.0,
-                  0,
-                ),
-                child: Container(
-                  width: 80,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppTheme.accentTeal, AppTheme.accentIndigo],
-                    ),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-        const SizedBox(height: 16),
-        const Text(
-          "ছবি স্ক্যান → প্রসেসিং → ফলাফল",
-          style: TextStyle(
-            color: AppTheme.textSecondary,
-            fontSize: 12,
-          ),
-        ),
-      ],
-    );
-  }
-}

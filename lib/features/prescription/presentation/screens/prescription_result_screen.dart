@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
+import 'package:medicine_guide_ai/core/widgets/scanner_loader.dart';
 import 'package:medicine_guide_ai/features/prescription/domain/entities/prescription_medicine.dart';
 import 'package:medicine_guide_ai/features/prescription/presentation/bloc/prescription_bloc.dart';
 import 'package:medicine_guide_ai/features/prescription/presentation/bloc/prescription_state.dart';
@@ -43,30 +44,15 @@ class PrescriptionResultScreen extends StatelessWidget {
   }
 
   Widget _buildLoadingView() {
-    return Center(
+    return const Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SizedBox(
-            width: 140,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: const LinearProgressIndicator(
-                color: AppTheme.accentIndigo,
-                backgroundColor: Color(0xFF1E293B),
-                minHeight: 4,
-              ),
-            ),
-          ),
+          ScannerLoader(size: 100),
           SizedBox(height: 24),
           Text(
             'প্রেসক্রিপশন বিশ্লেষণ করা হচ্ছে...',
             style: TextStyle(color: AppTheme.textSecondary, fontSize: 16),
-          ),
-          SizedBox(height: 8),
-          Text(
-            'এটি কয়েক সেকেন্ড সময় নিতে পারে',
-            style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
           ),
         ],
       ),

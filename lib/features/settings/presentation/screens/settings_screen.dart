@@ -4,6 +4,7 @@ import 'package:medicine_guide_ai/core/constants/constants.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
 import 'package:medicine_guide_ai/core/services/database_helper.dart';
 import 'package:medicine_guide_ai/core/services/notification_service.dart';
+import 'package:medicine_guide_ai/core/widgets/scanner_loader.dart';
 import 'package:medicine_guide_ai/features/onboarding/presentation/screens/onboarding_screen.dart';
 import 'package:medicine_guide_ai/features/history/presentation/bloc/history_bloc.dart';
 import 'package:medicine_guide_ai/features/history/presentation/bloc/history_event.dart';
@@ -243,20 +244,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Scaffold(
+      return const Scaffold(
         backgroundColor: AppTheme.darkBg,
         body: Center(
-          child: SizedBox(
-            width: 140,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: const LinearProgressIndicator(
-                color: AppTheme.accentTeal,
-                backgroundColor: Color(0xFF1E293B),
-                minHeight: 4,
-              ),
-            ),
-          ),
+          child: ScannerLoader(size: 100),
         ),
       );
     }

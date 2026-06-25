@@ -9,6 +9,7 @@ import 'package:medicine_guide_ai/features/history/presentation/bloc/history_eve
 import 'package:medicine_guide_ai/features/history/presentation/bloc/history_state.dart';
 import 'package:medicine_guide_ai/features/scanner/data/models/medicine_model.dart';
 import 'package:medicine_guide_ai/features/scanner/presentation/screens/medicine_detail_screen.dart';
+import 'package:medicine_guide_ai/core/widgets/scanner_loader.dart';
 
 class MedicalDiaryScreen extends StatefulWidget {
   const MedicalDiaryScreen({super.key});
@@ -122,18 +123,8 @@ class _MedicalDiaryScreenState extends State<MedicalDiaryScreen> {
       body: BlocBuilder<HistoryBloc, HistoryState>(
         builder: (context, state) {
           if (state is HistoryLoading) {
-            return Center(
-              child: SizedBox(
-                width: 140,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: const LinearProgressIndicator(
-                    color: AppTheme.accentIndigo,
-                    backgroundColor: Color(0xFF1E293B),
-                    minHeight: 4,
-                  ),
-                ),
-              ),
+            return const Center(
+              child: ScannerLoader(size: 100),
             );
           }
           if (state is HistoryError) {

@@ -5,6 +5,7 @@ import 'package:medicine_guide_ai/core/theme/theme.dart';
 import 'package:medicine_guide_ai/core/services/database_helper.dart';
 import 'package:medicine_guide_ai/features/dashboard/presentation/bloc/navigation_bloc.dart';
 import 'package:medicine_guide_ai/features/dashboard/presentation/screens/dashboard_screen.dart';
+import 'package:medicine_guide_ai/core/widgets/scanner_loader.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -251,25 +252,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             borderRadius: BorderRadius.circular(14),
                           ),
                         ),
-                        child: _isSaving
-                            ? const SizedBox(
-                                width: 60,
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.all(Radius.circular(2)),
-                                  child: LinearProgressIndicator(
-                                    color: Colors.white,
-                                    backgroundColor: Colors.white24,
-                                    minHeight: 3,
-                                  ),
-                                ),
-                              )
-                            : const Text(
-                                'অ্যাপ শুরু করুন',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                      child: _isSaving
+                          ? const ScannerLoader(size: 24)
+                          : const Text(
+                              'অ্যাপ শুরু করুন',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
                               ),
+                            ),
                       ),
                     ),
                     const SizedBox(height: 10),

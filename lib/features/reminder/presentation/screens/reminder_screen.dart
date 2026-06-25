@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
+import 'package:medicine_guide_ai/core/widgets/scanner_loader.dart';
 import 'package:medicine_guide_ai/features/reminder/domain/entities/reminder.dart';
 import 'package:medicine_guide_ai/features/reminder/presentation/bloc/reminder_bloc.dart';
 import 'package:medicine_guide_ai/features/reminder/presentation/bloc/reminder_event.dart';
@@ -33,18 +34,8 @@ class ReminderScreen extends StatelessWidget {
       body: BlocBuilder<ReminderBloc, ReminderState>(
         builder: (context, state) {
           if (state is ReminderLoading) {
-            return Center(
-              child: SizedBox(
-                width: 140,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: const LinearProgressIndicator(
-                    color: AppTheme.accentTeal,
-                    backgroundColor: Color(0xFF1E293B),
-                    minHeight: 4,
-                  ),
-                ),
-              ),
+            return const Center(
+              child: ScannerLoader(size: 100),
             );
           }
           if (state is ReminderError) {

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:medicine_guide_ai/core/services/gemini_service.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
+import 'package:medicine_guide_ai/core/widgets/scanner_loader.dart';
 import 'package:medicine_guide_ai/features/prescription/presentation/bloc/prescription_bloc.dart';
 import 'package:medicine_guide_ai/features/prescription/presentation/bloc/prescription_event.dart';
 import 'package:medicine_guide_ai/features/prescription/presentation/bloc/prescription_state.dart';
@@ -40,17 +41,7 @@ class _PrescriptionScanScreenState extends State<PrescriptionScanScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const SizedBox(height: 10),
-                const SizedBox(
-                  width: 140,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.all(Radius.circular(10)),
-                    child: LinearProgressIndicator(
-                      color: AppTheme.accentTeal,
-                      backgroundColor: Color(0xFF1E293B),
-                      minHeight: 4,
-                    ),
-                  ),
-                ),
+                const ScannerLoader(size: 80),
                 const SizedBox(height: 24),
                 const Text(
                   'প্রেসক্রিপশন বিশ্লেষণ করা হচ্ছে...',
