@@ -1,4 +1,4 @@
-﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:medicine_guide_ai/core/errors/failures.dart';
 import 'package:medicine_guide_ai/core/services/ocr_service.dart';
 import 'package:medicine_guide_ai/features/scanner/data/datasources/medicine_local_datasource.dart';
@@ -70,10 +70,17 @@ class MedicineRepositoryImpl implements MedicineRepository {
       return (null, remoteMedicine);
     } catch (e) {
       debugPrint("[Repository] Error: $e");
-      final msg = e.toString().toLowerCase();
-      if (msg.contains('quota') ||
-          msg.contains('429') ||
-          msg.contains('resource_exhausted')) {
+      final msg = e.toString();
+      String userFriendlyMessage = msg;
+      if (msg.startsWith('Exception: ')) {
+        userFriendlyMessage = msg.substring(11);
+      }
+
+      final lowercaseMsg = msg.toLowerCase();
+      if (lowercaseMsg.contains('quota') ||
+          lowercaseMsg.contains('429') ||
+          lowercaseMsg.contains('resource_exhausted') ||
+          lowercaseMsg.contains('rate limit')) {
         return (
           const ServerFailure(
             'কোটা শেষ হয়ে গেছে।\n'
@@ -82,7 +89,7 @@ class MedicineRepositoryImpl implements MedicineRepository {
           null,
         );
       }
-      return (ServerFailure('ত্রুটি ঘটেছে: ${e.toString()}'), null);
+      return (ServerFailure(userFriendlyMessage), null);
     }
   }
 }

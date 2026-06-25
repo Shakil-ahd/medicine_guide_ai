@@ -1,4 +1,4 @@
-﻿import 'dart:io';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
@@ -10,6 +10,7 @@ import 'package:medicine_guide_ai/features/history/presentation/bloc/history_sta
 import 'package:medicine_guide_ai/features/scanner/data/models/medicine_model.dart';
 import 'package:medicine_guide_ai/features/scanner/presentation/screens/medicine_detail_screen.dart';
 import 'package:medicine_guide_ai/core/widgets/scanner_loader.dart';
+import 'package:medicine_guide_ai/core/widgets/custom_snackbar.dart';
 
 class MedicalDiaryScreen extends StatefulWidget {
   const MedicalDiaryScreen({super.key});
@@ -110,9 +111,7 @@ class _MedicalDiaryScreenState extends State<MedicalDiaryScreen> {
         ),
       );
     } else if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ওষুধের বিস্তারিত তথ্য পাওয়া যায়নি।')),
-      );
+      CustomSnackBar.showError(context, 'ওষুধের বিস্তারিত তথ্য পাওয়া যায়নি।');
     }
   }
 

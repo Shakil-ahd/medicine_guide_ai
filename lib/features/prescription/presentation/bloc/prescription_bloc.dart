@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medicine_guide_ai/core/services/database_helper.dart';
 import 'package:medicine_guide_ai/core/services/gemini_service.dart';
@@ -38,6 +38,14 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
           'প্রেসক্রিপশন পড়া যায়নি।\n'
           'API কোটা শেষ হয়ে থাকতে পারে — কিছুক্ষণ পর আবার চেষ্টা করুন।',
         ));
+        return;
+      }
+
+      // Check if there is a validation error in the response
+      if (result.isNotEmpty &&
+          result.first is Map &&
+          (result.first as Map).containsKey('error')) {
+        emit(PrescriptionError((result.first as Map)['error'] as String));
         return;
       }
       final medicines = result.map((item) {
@@ -101,13 +109,17 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
       emit(PrescriptionLoaded(medicines));
     } catch (e) {
       if (_isCancelled) return;
-      final msg = e.toString().toLowerCase();
-      if (msg.contains('quota') || msg.contains('429')) {
+      var errorMsg = e.toString();
+      if (errorMsg.startsWith('Exception: ')) {
+        errorMsg = errorMsg.substring(11);
+      }
+      final msgLower = errorMsg.toLowerCase();
+      if (msgLower.contains('quota') || msgLower.contains('429')) {
         emit(PrescriptionError(
           'API কোটা শেষ হয়ে গেছে।\nকিছুক্ষণ পর আবার চেষ্টা করুন।',
         ));
       } else {
-        emit(PrescriptionError('ত্রুটি: ${e.toString()}'));
+        emit(PrescriptionError(errorMsg));
       }
     }
   }

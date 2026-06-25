@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:medicine_guide_ai/core/constants/constants.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
 
@@ -124,7 +124,8 @@ class SettingsScreen extends StatelessWidget {
                       icon: Icons.document_scanner_rounded,
                       color: AppTheme.accentTeal,
                       title: 'AI Medicine Scanner',
-                      desc: 'যেকোনো ওষুধের ছবি তুলুন — AI দাম, ব্যবহার ও বিকল্প দেখাবে।',
+                      desc:
+                          'যেকোনো ওষুধের ছবি তুলুন — AI দাম, ব্যবহার ও বিকল্প দেখাবে।',
                     ),
                     const SizedBox(height: 12),
                     _FeatureHighlight(
@@ -145,7 +146,8 @@ class SettingsScreen extends StatelessWidget {
                       icon: Icons.history_edu_rounded,
                       color: const Color(0xFFEC4899),
                       title: 'Medical History',
-                      desc: 'সব স্ক্যান ও প্রেসক্রিপশনের রেকর্ড অফলাইনে সংরক্ষিত।',
+                      desc:
+                          'সব স্ক্যান ও প্রেসক্রিপশনের রেকর্ড অফলাইনে সংরক্ষিত।',
                     ),
                     const SizedBox(height: 12),
                     _FeatureHighlight(
@@ -158,7 +160,9 @@ class SettingsScreen extends StatelessWidget {
                     Center(
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: AppTheme.darkBg,
                           borderRadius: BorderRadius.circular(20),
@@ -215,7 +219,10 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 8,
+                ),
                 child: Row(
                   children: [
                     Container(
@@ -224,8 +231,11 @@ class SettingsScreen extends StatelessWidget {
                         color: AppTheme.accentIndigo.withAlpha(20),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.menu_book_rounded,
-                          color: AppTheme.accentIndigo, size: 20),
+                      child: const Icon(
+                        Icons.menu_book_rounded,
+                        color: AppTheme.accentIndigo,
+                        size: 20,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     const Text(
@@ -327,7 +337,10 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 8,
+                ),
                 child: Row(
                   children: [
                     Container(
@@ -336,8 +349,11 @@ class SettingsScreen extends StatelessWidget {
                         color: AppTheme.accentTeal.withAlpha(20),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.fact_check_rounded,
-                          color: AppTheme.accentTeal, size: 20),
+                      child: const Icon(
+                        Icons.fact_check_rounded,
+                        color: AppTheme.accentTeal,
+                        size: 20,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     const Text(
@@ -435,7 +451,10 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 8,
+                ),
                 child: Row(
                   children: [
                     Container(
@@ -507,7 +526,10 @@ class SettingsScreen extends StatelessWidget {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 28, 20, 8),
-              child: _buildSectionHeader('সহায়তা ও তথ্য', Icons.support_agent_rounded),
+              child: _buildSectionHeader(
+                'সহায়তা ও তথ্য',
+                Icons.support_agent_rounded,
+              ),
             ),
           ),
           SliverPadding(
@@ -554,7 +576,10 @@ class SettingsScreen extends StatelessWidget {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 28, 20, 8),
-              child: _buildSectionHeader('অ্যাপ তথ্য', Icons.smartphone_rounded),
+              child: _buildSectionHeader(
+                'অ্যাপ তথ্য',
+                Icons.smartphone_rounded,
+              ),
             ),
           ),
           SliverPadding(
@@ -605,7 +630,10 @@ class SettingsScreen extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppTheme.accentTeal.withAlpha(50), width: 1.5),
+        border: Border.all(
+          color: AppTheme.accentTeal.withAlpha(50),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
             color: AppTheme.accentTeal.withAlpha(15),
@@ -657,15 +685,15 @@ class SettingsScreen extends StatelessWidget {
                 SizedBox(height: 3),
                 Text(
                   'সুস্থ থাকুন, সুরক্ষিত থাকুন',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppTheme.textSecondary,
-                  ),
+                  style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                 ),
                 SizedBox(height: 6),
                 Row(
                   children: [
-                    _StatusBadge(label: 'AI Powered', color: AppTheme.accentTeal),
+                    _StatusBadge(
+                      label: 'AI Powered',
+                      color: AppTheme.accentTeal,
+                    ),
                     SizedBox(width: 6),
                     _StatusBadge(label: 'বাংলা', color: Color(0xFF5C6BC0)),
                   ],
@@ -739,10 +767,7 @@ class SettingsScreen extends StatelessWidget {
       child: Column(
         children: List.generate(tiles.length, (index) {
           final tile = tiles[index];
-          return _AnimatedSettingsTile(
-            data: tile,
-            showDivider: !tile.isLast,
-          );
+          return _AnimatedSettingsTile(data: tile, showDivider: !tile.isLast);
         }),
       ),
     );
@@ -761,14 +786,15 @@ class SettingsScreen extends StatelessWidget {
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.favorite_rounded, color: AppTheme.warningRed, size: 14),
+              Icon(
+                Icons.favorite_rounded,
+                color: AppTheme.warningRed,
+                size: 14,
+              ),
               SizedBox(width: 6),
               Text(
                 'Made with love for Bangladesh',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppTheme.textSecondary,
-                ),
+                style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
               ),
             ],
           ),
@@ -776,16 +802,12 @@ class SettingsScreen extends StatelessWidget {
         const SizedBox(height: 10),
         const Text(
           'MediScan AI © 2026 | All Rights Reserved',
-          style: TextStyle(
-            fontSize: 11,
-            color: Color(0xFF546E7A),
-          ),
+          style: TextStyle(fontSize: 11, color: Color(0xFF546E7A)),
         ),
       ],
     );
   }
 }
-
 
 class _SettingsTileData {
   final IconData icon;
@@ -809,15 +831,11 @@ class _SettingsTileData {
   });
 }
 
-
 class _AnimatedSettingsTile extends StatefulWidget {
   final _SettingsTileData data;
   final bool showDivider;
 
-  const _AnimatedSettingsTile({
-    required this.data,
-    required this.showDivider,
-  });
+  const _AnimatedSettingsTile({required this.data, required this.showDivider});
 
   @override
   State<_AnimatedSettingsTile> createState() => _AnimatedSettingsTileState();
@@ -885,8 +903,10 @@ class _AnimatedSettingsTileState extends State<_AnimatedSettingsTile> {
                 const SizedBox(width: 8),
                 if (widget.data.trailingIsLabel)
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: widget.data.iconColor.withAlpha(20),
                       borderRadius: BorderRadius.circular(8),
@@ -906,7 +926,9 @@ class _AnimatedSettingsTileState extends State<_AnimatedSettingsTile> {
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 3),
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: AppTheme.darkBg,
                           borderRadius: BorderRadius.circular(6),
@@ -944,7 +966,6 @@ class _AnimatedSettingsTileState extends State<_AnimatedSettingsTile> {
     );
   }
 }
-
 
 class _QuickStatCard extends StatelessWidget {
   final IconData icon;
@@ -990,17 +1011,13 @@ class _QuickStatCard extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 10,
-              color: AppTheme.textSecondary,
-            ),
+            style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary),
           ),
         ],
       ),
     );
   }
 }
-
 
 class _StatusBadge extends StatelessWidget {
   final String label;
@@ -1029,7 +1046,6 @@ class _StatusBadge extends StatelessWidget {
   }
 }
 
-
 class _SectionDivider extends StatelessWidget {
   final String title;
 
@@ -1056,7 +1072,6 @@ class _SectionDivider extends StatelessWidget {
     );
   }
 }
-
 
 class _FeatureHighlight extends StatelessWidget {
   final IconData icon;
@@ -1115,7 +1130,6 @@ class _FeatureHighlight extends StatelessWidget {
   }
 }
 
-
 class _HowToStep extends StatelessWidget {
   final int stepNum;
   final Color color;
@@ -1142,9 +1156,7 @@ class _HowToStep extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [color.withAlpha(80), color],
-                ),
+                gradient: LinearGradient(colors: [color.withAlpha(80), color]),
                 shape: BoxShape.circle,
               ),
               child: Center(
@@ -1204,7 +1216,6 @@ class _HowToStep extends StatelessWidget {
   }
 }
 
-
 class _InstructionCard extends StatelessWidget {
   final IconData icon;
   final Color color;
@@ -1252,3 +1263,5 @@ class _InstructionCard extends StatelessWidget {
     );
   }
 }
+
+

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medicine_guide_ai/core/constants/constants.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
@@ -6,6 +6,7 @@ import 'package:medicine_guide_ai/core/services/database_helper.dart';
 import 'package:medicine_guide_ai/features/dashboard/presentation/bloc/navigation_bloc.dart';
 import 'package:medicine_guide_ai/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:medicine_guide_ai/core/widgets/scanner_loader.dart';
+import 'package:medicine_guide_ai/core/widgets/custom_snackbar.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -40,9 +41,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('অনুগ্রহ করে আবার চেষ্টা করুন।')),
-        );
+        CustomSnackBar.showError(context, 'অনুগ্রহ করে আবার চেষ্টা করুন।');
       }
     } finally {
       if (mounted) {

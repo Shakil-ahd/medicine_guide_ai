@@ -7,13 +7,12 @@ import 'package:medicine_guide_ai/core/config/secrets.dart';
 
 class GeminiService {
   static const List<String> _models = [
-    'gemini-2.0-flash-lite',
-    'gemini-2.0-flash',
-    'gemini-2.5-flash-lite',
     'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-1.5-flash',
   ];
 
-  static const Duration _timeout = Duration(seconds: 40);
+  static const Duration _timeout = Duration(seconds: 12);
 
   int _currentKeyIndex = 0;
 
@@ -80,14 +79,111 @@ class GeminiService {
         msg.contains('overloaded');
   }
 
-  bool _isFatalError(Object e) {
+  bool _isApiKeyInvalidError(Object e) {
     final msg = e.toString().toLowerCase();
     return msg.contains('api_key_invalid') ||
         msg.contains('api key not valid') ||
         msg.contains('invalid api key') ||
-        msg.contains('socketexception') ||
+        msg.contains('api key');
+  }
+
+  bool _isNetworkError(Object e) {
+    final msg = e.toString().toLowerCase();
+    return msg.contains('socketexception') ||
         msg.contains('network is unreachable') ||
         msg.contains('no address associated');
+  }
+
+  static final Map<int, String> _lastKnownStatus = {};
+  static final Map<int, DateTime> _rateLimitExpiry = {};
+
+  bool hasAnyWorkingKey() {
+    final keys = _keys;
+    final now = DateTime.now();
+    for (int i = 0; i < keys.length; i++) {
+      if (_lastKnownStatus[i] == 'invalid') {
+        continue;
+      }
+      final expiry = _rateLimitExpiry[i];
+      if (expiry != null && now.isBefore(expiry)) {
+        continue;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  Future<List<Map<String, dynamic>>> checkAllKeysStatus() async {
+    final statusList = <Map<String, dynamic>>[];
+    final keys = _keys;
+    int? firstWorkingIndex;
+
+    for (int i = 0; i < keys.length; i++) {
+      final key = keys[i];
+      final maskedKey = key.length > 10
+          ? '${key.substring(0, 6)}...${key.substring(key.length - 4)}'
+          : 'Key ${i + 1}';
+
+      try {
+        final model = GenerativeModel(
+          model: 'gemini-2.5-flash',
+          apiKey: key,
+          generationConfig: GenerationConfig(
+            maxOutputTokens: 2,
+            temperature: 0.0,
+          ),
+        );
+        final response = await model
+            .generateContent([Content.text('respond with OK')])
+            .timeout(const Duration(seconds: 4));
+
+        if (response.text != null && response.text!.trim().isNotEmpty) {
+          _lastKnownStatus[i] = 'working';
+          firstWorkingIndex ??= i;
+          statusList.add({
+            'index': i,
+            'masked': maskedKey,
+            'status': 'সচল (Working)',
+            'isWorking': true,
+          });
+        } else {
+          _lastKnownStatus[i] = 'unknown';
+          statusList.add({
+            'index': i,
+            'masked': maskedKey,
+            'status': 'অজানা সমস্যা (Unknown Response)',
+            'isWorking': false,
+          });
+        }
+      } catch (e) {
+        final errorMsg = e.toString().toLowerCase();
+        String statusText = 'ত্রুটি (Error)';
+        if (_isQuotaError(e)) {
+          statusText = 'কোটা শেষ (Limit Exceeded / 429)';
+          _lastKnownStatus[i] = 'rateLimited';
+        } else if (_isApiKeyInvalidError(e)) {
+          statusText = 'ভুল কি (Invalid Key)';
+          _lastKnownStatus[i] = 'invalid';
+        } else if (errorMsg.contains('timeout')) {
+          statusText = 'সময় শেষ (Timeout)';
+          _lastKnownStatus[i] = 'timeout';
+        } else {
+          _lastKnownStatus[i] = 'error';
+        }
+
+        statusList.add({
+          'index': i,
+          'masked': maskedKey,
+          'status': statusText,
+          'isWorking': false,
+        });
+      }
+    }
+
+    if (firstWorkingIndex != null) {
+      _currentKeyIndex = firstWorkingIndex;
+    }
+    return statusList;
   }
 
   Future<Map<String, dynamic>?> fetchMedicineDetails(
@@ -97,9 +193,14 @@ class GeminiService {
     final prompt =
         'You are a medical expert for Bangladesh market. Analyze this medicine package image carefully.\n'
         'OCR extracted text: "$scannedText"\n\n'
+        'VALIDATION RULE:\n'
+        'First, check if the image displays a medicine package, blister pack, tablet, pill, capsule, syrup bottle, or health product. '
+        'If the image is NOT a medicine, health product, or medical item (e.g. it is a cat, dog, random object, general text, book, food plate, scenery, etc.), '
+        'you MUST return a JSON object with ONLY an "error" key explaining this in Bengali: '
+        '{"error": "এটি কোনো ওষুধ বা প্রেসক্রিপশনের ছবি নয়। অনুগ্রহ করে ওষুধের স্পষ্ট ছবি আপলোড করুন।"}.\n\n'
         'CRITICAL: Return ONLY a raw JSON object (no markdown code blocks, no explanation) with this exact structure:\n'
         '{"name":"exact brand name from image","genericName":"INN generic name","manufacturer":"company name in English",'
-        '"indications":"ব্যবহার বাংলায়","sideEffects":"পার্শ্বপ্রতিক্রিয়া বাংলায়","dosage":"মাত্রা বাংলায়",'
+        '"indications":"ব্যবহার বাংলায়","sideEffects":"পার্শ্বপ্রতিক্রিয়া বাংলায়","dosage":"মাত্রা বাংলায় (e.g. 1-0-1 or 1-0-0 as numeric pattern corresponding to Morning-Afternoon-Night/Evening if matching standard dosage)",'
         '"instructions":"সেবনবিধি বাংলায়","price":"official MRP price in BDT e.g. ৳12.50/tablet or ৳150/pack",'
         '"genericAlternatives":[{"name":"brand","manufacturer":"company","price":"৳X/unit"}]}\n\n'
         'ACCURACY RULES:\n'
@@ -113,9 +214,25 @@ class GeminiService {
     final keys = _keys;
     final totalKeys = keys.length;
 
-    for (int ki = 0; ki < totalKeys; ki++) {
-      final keyIndex = (_currentKeyIndex + ki) % totalKeys;
+    if (!hasAnyWorkingKey()) {
+      throw Exception(
+        'আজকের লিমিট শেষ। অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।',
+      );
+    }
+
+    for (int keyIndex = 0; keyIndex < totalKeys; keyIndex++) {
       final key = keys[keyIndex];
+
+      // Skip keys that are known to be invalid
+      if (_lastKnownStatus[keyIndex] == 'invalid') {
+        continue;
+      }
+
+      // Skip keys that are currently rate-limited
+      final expiry = _rateLimitExpiry[keyIndex];
+      if (expiry != null && DateTime.now().isBefore(expiry)) {
+        continue;
+      }
 
       debugPrint('[GeminiService] --- Testing Key Index: $keyIndex ---');
 
@@ -127,9 +244,12 @@ class GeminiService {
             Content.multi([TextPart(prompt), DataPart(mimeType, bytes)]),
           ];
 
-          final response = await model.generateContent(content).timeout(
+          final response = await model
+              .generateContent(content)
+              .timeout(
                 _timeout,
-                onTimeout: () => throw TimeoutException('Timeout on $modelName'),
+                onTimeout: () =>
+                    throw TimeoutException('Timeout on $modelName'),
               );
 
           final text = response.text;
@@ -142,37 +262,61 @@ class GeminiService {
           try {
             final decoded = jsonDecode(cleaned);
             if (decoded is Map<String, dynamic>) {
-              debugPrint('[GeminiService] ✓ Success with key=$keyIndex model=$modelName');
+              debugPrint(
+                '[GeminiService] ✓ Success with key=$keyIndex model=$modelName',
+              );
               _currentKeyIndex = keyIndex;
+              _lastKnownStatus[keyIndex] = 'working';
               return decoded;
             }
           } catch (e) {
-            debugPrint('[GeminiService] JSON parse error on $modelName: $e. Raw text: $text');
+            debugPrint(
+              '[GeminiService] JSON parse error on $modelName: $e. Raw text: $text',
+            );
             continue;
           }
         } on TimeoutException {
-          debugPrint('[GeminiService] Timeout on model $modelName with key $keyIndex');
+          debugPrint(
+            '[GeminiService] Timeout on model $modelName with key $keyIndex',
+          );
           continue;
         } catch (e) {
-          if (_isFatalError(e)) {
+          if (_isNetworkError(e)) {
             debugPrint('[GeminiService] Fatal network error: $e');
             return null;
           }
+          if (_isApiKeyInvalidError(e)) {
+            debugPrint(
+              '[GeminiService] Invalid key error: $e. Rotating key immediately.',
+            );
+            _lastKnownStatus[keyIndex] = 'invalid';
+            break; // Break model loop to rotate key immediately
+          }
           if (_isQuotaError(e)) {
-            debugPrint('[GeminiService] Quota hit on model $modelName with key $keyIndex');
-            continue;
+            debugPrint(
+              '[GeminiService] Quota hit on model $modelName with key $keyIndex. Rotating key immediately.',
+            );
+            _lastKnownStatus[keyIndex] = 'rateLimited';
+            _rateLimitExpiry[keyIndex] = DateTime.now().add(
+              const Duration(minutes: 5),
+            );
+            break; // Break model loop to rotate key immediately
           }
           if (_isServerBusyError(e)) {
             debugPrint('[GeminiService] Server busy, waiting 2s...');
             await Future.delayed(const Duration(seconds: 2));
             continue;
           }
-          debugPrint('[GeminiService] Error on key $keyIndex model $modelName: $e');
+          debugPrint(
+            '[GeminiService] Error on key $keyIndex model $modelName: $e',
+          );
           continue;
         }
       }
 
-      debugPrint('[GeminiService] All models exhausted for Key Index: $keyIndex. Rotating to next key...');
+      debugPrint(
+        '[GeminiService] All models exhausted or key failed for Key Index: $keyIndex. Rotating to next key...',
+      );
     }
 
     debugPrint('[GeminiService] All keys and models completely exhausted.');
@@ -181,18 +325,23 @@ class GeminiService {
 
   Future<List<dynamic>?> parsePrescription(String imagePath) async {
     final prompt =
-        'You are a medical expert for Bangladesh. Read this handwritten prescription image carefully.\n'
+        'You are a medical expert for Bangladesh. Read this handwritten prescription or medical report image carefully.\n'
+        'VALIDATION RULE:\n'
+        'First, check if the image displays a medical prescription, doctor note, or clinical report. '
+        'If the image is NOT a medical prescription or clinical document (e.g. it is a cat, dog, food, random text, scenery, etc.), '
+        'you MUST return a JSON array containing a single object with ONLY an "error" key explaining this in Bengali: '
+        '[{"error": "এটি কোনো প্রেসক্রিপশনের ছবি নয়। অনুগ্রহ করে একটি স্পষ্ট প্রেসক্রিপশন আপলোড করুন।"}]\n\n'
         'Extract ALL medicines listed by the doctor. For each medicine, provide detailed info.\n\n'
         'CRITICAL: Return ONLY a raw JSON array (no markdown, no extra text) with this structure:\n'
         '[{"name":"medicine brand name","purpose":"কেন খেতে হবে বাংলায়",'
-        '"dosage":"exact dose as written e.g. ১+০+১ বা ১ টি সকালে",'
+        '"dosage":"dosage pattern formatted strictly as a numeric pattern e.g., 1-0-1 for morning/night, 1-1-1 for thrice a day, 1-0-0 for morning only, 0-0-1 for night only (strictly digits separated by hyphens, no Bengali text or parentheses inside this field)",'
         '"duration":"কতদিন বাংলায়","genericName":"INN name in English",'
         '"manufacturer":"Bangladesh manufacturer in English",'
         '"sideEffects":"পার্শ্বপ্রতিক্রিয়া বাংলায়",'
         '"price":"actual MRP in BDT e.g. ৳12.50/tablet",'
         '"genericAlternatives":[{"name":"brand","manufacturer":"company","price":"৳X"}]}]\n\n'
         'ACCURACY RULES:\n'
-        '1. READ dose instructions VERY carefully. If written 1+0+1, dosage = "সকালে ১টি ও রাতে ১টি (দিনে ২বার)".\n'
+        '1. Translate the dose instructions VERY carefully into the strict hyphen-separated numeric pattern format (e.g. 1-0-1, 1-1-1, 1-0-0, 0-0-1).\n'
         '2. Price must be actual current MRP in Bangladesh. Write "মূল্য অজানা" if uncertain.\n'
         '3. Do NOT invent medicines not written in the prescription.\n'
         '4. Alternatives must be real brands in Bangladesh pharmacies.';
@@ -202,9 +351,25 @@ class GeminiService {
     final keys = _keys;
     final totalKeys = keys.length;
 
-    for (int ki = 0; ki < totalKeys; ki++) {
-      final keyIndex = (_currentKeyIndex + ki) % totalKeys;
+    if (!hasAnyWorkingKey()) {
+      throw Exception(
+        'আজকের লিমিট শেষ। অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।',
+      );
+    }
+
+    for (int keyIndex = 0; keyIndex < totalKeys; keyIndex++) {
       final key = keys[keyIndex];
+
+      // Skip keys that are known to be invalid
+      if (_lastKnownStatus[keyIndex] == 'invalid') {
+        continue;
+      }
+
+      // Skip keys that are currently rate-limited
+      final expiry = _rateLimitExpiry[keyIndex];
+      if (expiry != null && DateTime.now().isBefore(expiry)) {
+        continue;
+      }
 
       debugPrint('[GeminiService] --- Testing Key Index: $keyIndex ---');
 
@@ -216,9 +381,12 @@ class GeminiService {
             Content.multi([TextPart(prompt), DataPart(mimeType, bytes)]),
           ];
 
-          final response = await model.generateContent(content).timeout(
+          final response = await model
+              .generateContent(content)
+              .timeout(
                 _timeout,
-                onTimeout: () => throw TimeoutException('Timeout on $modelName'),
+                onTimeout: () =>
+                    throw TimeoutException('Timeout on $modelName'),
               );
 
           final text = response.text;
@@ -231,37 +399,61 @@ class GeminiService {
           try {
             final decoded = jsonDecode(cleaned);
             if (decoded is List) {
-              debugPrint('[GeminiService] ✓ Prescription success with key=$keyIndex model=$modelName');
+              debugPrint(
+                '[GeminiService] ✓ Prescription success with key=$keyIndex model=$modelName',
+              );
               _currentKeyIndex = keyIndex;
+              _lastKnownStatus[keyIndex] = 'working';
               return decoded;
             }
           } catch (e) {
-            debugPrint('[GeminiService] JSON parse error on $modelName: $e. Raw text: $text');
+            debugPrint(
+              '[GeminiService] JSON parse error on $modelName: $e. Raw text: $text',
+            );
             continue;
           }
         } on TimeoutException {
-          debugPrint('[GeminiService] Timeout on model $modelName with key $keyIndex');
+          debugPrint(
+            '[GeminiService] Timeout on model $modelName with key $keyIndex',
+          );
           continue;
         } catch (e) {
-          if (_isFatalError(e)) {
+          if (_isNetworkError(e)) {
             debugPrint('[GeminiService] Fatal network error: $e');
             return null;
           }
+          if (_isApiKeyInvalidError(e)) {
+            debugPrint(
+              '[GeminiService] Invalid key error: $e. Rotating key immediately.',
+            );
+            _lastKnownStatus[keyIndex] = 'invalid';
+            break; // Break model loop to rotate key immediately
+          }
           if (_isQuotaError(e)) {
-            debugPrint('[GeminiService] Quota hit on model $modelName with key $keyIndex');
-            continue;
+            debugPrint(
+              '[GeminiService] Quota hit on model $modelName with key $keyIndex. Rotating key immediately.',
+            );
+            _lastKnownStatus[keyIndex] = 'rateLimited';
+            _rateLimitExpiry[keyIndex] = DateTime.now().add(
+              const Duration(minutes: 5),
+            );
+            break; // Break model loop to rotate key immediately
           }
           if (_isServerBusyError(e)) {
             debugPrint('[GeminiService] Server busy, waiting 2s...');
             await Future.delayed(const Duration(seconds: 2));
             continue;
           }
-          debugPrint('[GeminiService] Error on key $keyIndex model $modelName: $e');
+          debugPrint(
+            '[GeminiService] Error on key $keyIndex model $modelName: $e',
+          );
           continue;
         }
       }
 
-      debugPrint('[GeminiService] All models exhausted for Key Index: $keyIndex. Rotating to next key...');
+      debugPrint(
+        '[GeminiService] All models exhausted or key failed for Key Index: $keyIndex. Rotating to next key...',
+      );
     }
 
     debugPrint('[GeminiService] All keys and models completely exhausted.');

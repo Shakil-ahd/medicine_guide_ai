@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
@@ -82,10 +82,10 @@ class NotificationService {
     );
 
     for (final day in daysOfWeek) {
-      try {
-        final scheduledDate = _nextInstanceOfDay(hour, minute, day);
-        final notificationId = reminderId * 10 + day;
+      final scheduledDate = _nextInstanceOfDay(hour, minute, day);
+      final notificationId = reminderId * 10 + day;
 
+      try {
         await _notifications.zonedSchedule(
           notificationId,
           title,
@@ -97,8 +97,25 @@ class NotificationService {
           uiLocalNotificationDateInterpretation:
               UILocalNotificationDateInterpretation.absoluteTime,
         );
+        debugPrint('Successfully scheduled exact notification $notificationId for day $day');
       } catch (e) {
-        debugPrint('Failed to schedule notification for day $day: $e');
+        debugPrint('Exact alarm failed for day $day ($e), falling back to inexact alarm...');
+        try {
+          await _notifications.zonedSchedule(
+            notificationId,
+            title,
+            body,
+            scheduledDate,
+            details,
+            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+            matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+            uiLocalNotificationDateInterpretation:
+                UILocalNotificationDateInterpretation.absoluteTime,
+          );
+          debugPrint('Successfully scheduled inexact notification $notificationId for day $day');
+        } catch (err) {
+          debugPrint('Failed to schedule inexact notification for day $day: $err');
+        }
       }
     }
   }

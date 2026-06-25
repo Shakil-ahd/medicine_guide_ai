@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medicine_guide_ai/core/constants/constants.dart';
@@ -23,6 +23,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
   late AnimationController _scannerController;
   late Animation<double> _laserAnimation;
+  Timer? _timer;
 
   @override
   void initState() {
@@ -51,7 +52,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
     _controller.forward();
 
-    Timer(const Duration(milliseconds: 3000), () {
+    _timer = Timer(const Duration(milliseconds: 3000), () {
       if (mounted) {
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
@@ -75,6 +76,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
   @override
   void dispose() {
+    _timer?.cancel();
     _controller.dispose();
     _scannerController.dispose();
     super.dispose();

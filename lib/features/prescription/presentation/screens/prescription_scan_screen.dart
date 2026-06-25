@@ -1,4 +1,4 @@
-﻿import 'dart:io';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -9,6 +9,7 @@ import 'package:medicine_guide_ai/features/prescription/presentation/bloc/prescr
 import 'package:medicine_guide_ai/features/prescription/presentation/bloc/prescription_event.dart';
 import 'package:medicine_guide_ai/features/prescription/presentation/bloc/prescription_state.dart';
 import 'package:medicine_guide_ai/features/prescription/presentation/screens/prescription_result_screen.dart';
+import 'package:medicine_guide_ai/core/widgets/custom_snackbar.dart';
 
 class PrescriptionScanScreen extends StatefulWidget {
   const PrescriptionScanScreen({super.key});
@@ -108,12 +109,7 @@ class _PrescriptionScanScreenState extends State<PrescriptionScanScreen> {
           } else {
             _dismissLoadingDialog();
             if (state is PrescriptionLoaded) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('প্রেসক্রিপশন সফলভাবে বিশ্লেষণ করা হয়েছে এবং হিস্ট্রিতে সংরক্ষণ করা হয়েছে।'),
-                  backgroundColor: AppTheme.accentTeal,
-                ),
-              );
+              CustomSnackBar.showSuccess(context, 'প্রেসক্রিপশন সফলভাবে বিশ্লেষণ করা হয়েছে এবং হিস্ট্রিতে সংরক্ষণ করা হয়েছে।');
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -124,12 +120,7 @@ class _PrescriptionScanScreenState extends State<PrescriptionScanScreen> {
                 ),
               );
             } else if (state is PrescriptionError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: AppTheme.warningRed,
-                ),
-              );
+              CustomSnackBar.showError(context, state.message);
             }
           }
         },
