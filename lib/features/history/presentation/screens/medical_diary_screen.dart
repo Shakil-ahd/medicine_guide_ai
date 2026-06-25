@@ -386,7 +386,16 @@ class _MedicalDiaryScreenState extends State<MedicalDiaryScreen> {
                             side: const BorderSide(color: Color(0xFF263238)),
                           ),
                           child: InkWell(
-                            onTap: () => _viewMedicineDetails(context, med.name),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => MedicineDetailScreen(
+                                    medicine: med.toMedicine(),
+                                  ),
+                                ),
+                              );
+                            },
                             borderRadius: BorderRadius.circular(10),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),

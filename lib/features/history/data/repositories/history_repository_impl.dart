@@ -25,6 +25,11 @@ class HistoryRepositoryImpl implements HistoryRepository {
               purpose: map['purpose'] as String? ?? '',
               dosage: map['dosage'] as String? ?? '',
               duration: map['duration'] as String? ?? '',
+              genericName: map['genericName'] as String? ?? '',
+              manufacturer: map['manufacturer'] as String? ?? '',
+              sideEffects: map['sideEffects'] as String? ?? '',
+              price: map['price'] as String? ?? '',
+              genericAlternativesJson: map['genericAlternativesJson'] as String? ?? '[]',
             );
           }).toList();
         } catch (_) {}

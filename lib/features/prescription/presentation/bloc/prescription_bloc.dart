@@ -42,11 +42,17 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
       }
       final medicines = result.map((item) {
         final map = item as Map<String, dynamic>;
+        final alternativesList = map['genericAlternatives'] as List? ?? [];
         return PrescriptionMedicine(
           name: map['name'] as String? ?? '',
           purpose: map['purpose'] as String? ?? '',
           dosage: map['dosage'] as String? ?? '',
           duration: map['duration'] as String? ?? '',
+          genericName: map['genericName'] as String? ?? 'প্রেসক্রিপশন ওষুধ',
+          manufacturer: map['manufacturer'] as String? ?? 'প্রেসক্রিপশন থেকে সংগৃহীত',
+          sideEffects: map['sideEffects'] as String? ?? 'কোনো পার্শ্বপ্রতিক্রিয়া তথ্য নেই।',
+          price: map['price'] as String? ?? 'N/A',
+          genericAlternativesJson: jsonEncode(alternativesList),
         );
       }).toList();
 
@@ -58,32 +64,17 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
         if (med.name.trim().isNotEmpty) {
           final existing = await dbHelper.getMedicineByName(med.name);
           if (existing == null) {
-            final details = await _geminiService.fetchMedicineDetails(med.name);
-            if (details != null) {
-              await dbHelper.insertMedicine({
-                'name': details['name'] ?? med.name,
-                'genericName': details['genericName'] ?? 'প্রেসক্রিপশন ওষুধ',
-                'manufacturer': details['manufacturer'] ?? 'প্রেসক্রিপশন থেকে সংগৃহীত',
-                'indications': details['indications'] ?? med.purpose,
-                'sideEffects': details['sideEffects'] ?? 'কোনো পার্শ্বপ্রতিক্রিয়া তথ্য নেই।',
-                'dosage': details['dosage'] ?? med.dosage,
-                'instructions': details['instructions'] ?? med.duration,
-                'price': details['price'] ?? 'N/A',
-                'genericAlternativesJson': jsonEncode(details['genericAlternatives'] ?? []),
-              });
-            } else {
-              await dbHelper.insertMedicine({
-                'name': med.name,
-                'genericName': 'প্রেসক্রিপশন ওষুধ',
-                'manufacturer': 'প্রেসক্রিপশন থেকে সংগৃহীত',
-                'indications': med.purpose,
-                'sideEffects': 'কোনো পার্শ্বপ্রতিক্রিয়া তথ্য নেই।',
-                'dosage': med.dosage,
-                'instructions': med.duration,
-                'price': 'N/A',
-                'genericAlternativesJson': '[]',
-              });
-            }
+            await dbHelper.insertMedicine({
+              'name': med.name,
+              'genericName': med.genericName,
+              'manufacturer': med.manufacturer,
+              'indications': med.purpose,
+              'sideEffects': med.sideEffects,
+              'dosage': med.dosage,
+              'instructions': med.duration,
+              'price': med.price,
+              'genericAlternativesJson': med.genericAlternativesJson,
+            });
           }
         }
       }
@@ -94,6 +85,11 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
         'purpose': m.purpose,
         'dosage': m.dosage,
         'duration': m.duration,
+        'genericName': m.genericName,
+        'manufacturer': m.manufacturer,
+        'sideEffects': m.sideEffects,
+        'price': m.price,
+        'genericAlternativesJson': m.genericAlternativesJson,
       }).toList());
 
       await dbHelper.insertHistory({

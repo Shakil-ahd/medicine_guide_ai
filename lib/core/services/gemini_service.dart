@@ -141,11 +141,17 @@ class GeminiService {
 
   Future<List<dynamic>?> parsePrescription(String imagePath) async {
     final prompt =
-        'You are a medical AI assistant. Read this handwritten prescription image carefully.\n'
-        'Extract all medicines listed. Return ONLY a valid JSON array (no markdown) with this structure:\n'
+        'You are a medical AI assistant for Bangladesh. Read this handwritten prescription image carefully.\n'
+        'Extract all medicines listed. For each medicine, provide additional details from your medical knowledge base.\n'
+        'Return ONLY a valid JSON array (no markdown, no extra text) with this exact structure:\n'
         '[{"name":"medicine name","purpose":"কেন খেতে হবে বাংলায়",'
         '"dosage":"কীভাবে খেতে হবে বাংলায় (যেমন: ১+০+১ (সকালে ও রাতে ১টি করে))",'
-        '"duration":"কতদিন বাংলায়"}]';
+        '"duration":"কতদিন বাংলায়",'
+        '"genericName":"generic/chemical name of the medicine in English",'
+        '"manufacturer":"Bangladesh company name (manufacturer) in English",'
+        '"sideEffects":"পার্শ্বপ্রতিক্রিয়া বাংলায়",'
+        '"price":"আনুমানিক মূল্য বাংলায় (যেমন: ৳২.৫ / ট্যাবলেট)",'
+        '"genericAlternatives":[{"name":"alternative name","manufacturer":"manufacturer","price":"price"}]}]';
 
     final mimeType = _getMimeType(imagePath);
 

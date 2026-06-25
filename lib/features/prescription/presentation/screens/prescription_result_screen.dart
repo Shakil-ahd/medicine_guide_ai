@@ -4,6 +4,7 @@ import 'package:medicine_guide_ai/core/theme/theme.dart';
 import 'package:medicine_guide_ai/features/prescription/domain/entities/prescription_medicine.dart';
 import 'package:medicine_guide_ai/features/prescription/presentation/bloc/prescription_bloc.dart';
 import 'package:medicine_guide_ai/features/prescription/presentation/bloc/prescription_state.dart';
+import 'package:medicine_guide_ai/features/scanner/presentation/screens/medicine_detail_screen.dart';
 
 class PrescriptionResultScreen extends StatelessWidget {
   const PrescriptionResultScreen({super.key});
@@ -33,7 +34,7 @@ class PrescriptionResultScreen extends StatelessWidget {
             return _buildErrorView(context, state.message);
           }
           if (state is PrescriptionLoaded) {
-            return _buildResultView(state.medicines);
+            return _buildResultView(context, state.medicines);
           }
           return const SizedBox.shrink();
         },
@@ -103,7 +104,7 @@ class PrescriptionResultScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildResultView(List<PrescriptionMedicine> medicines) {
+  Widget _buildResultView(BuildContext context, List<PrescriptionMedicine> medicines) {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -152,7 +153,7 @@ class PrescriptionResultScreen extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         ...medicines.asMap().entries.map(
-          (entry) => _buildMedicineCard(entry.key + 1, entry.value),
+          (entry) => _buildMedicineCard(context, entry.key + 1, entry.value),
         ),
         const SizedBox(height: 16),
         Container(
@@ -184,7 +185,18 @@ class PrescriptionResultScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMedicineCard(int index, PrescriptionMedicine medicine) {
+  Widget _buildMedicineCard(BuildContext context, int index, PrescriptionMedicine medicine) {
+    void routeToDetail() {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => MedicineDetailScreen(
+            medicine: medicine.toMedicine(),
+          ),
+        ),
+      );
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -192,73 +204,109 @@ class PrescriptionResultScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFF263238)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: const BoxDecoration(
-              color: Color(0x1A6C63FF),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-            ),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 14,
-                  backgroundColor: AppTheme.accentIndigo,
-                  child: Text(
-                    '$index',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: routeToDetail,
+          borderRadius: BorderRadius.circular(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: const BoxDecoration(
+                  color: Color(0x1A6C63FF),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 14,
+                      backgroundColor: AppTheme.accentIndigo,
+                      child: Text(
+                        '$index',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    medicine.name,
-                    style: const TextStyle(
-                      color: AppTheme.textPrimary,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        medicine.name,
+                        style: const TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                  ),
+                    const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      color: AppTheme.textSecondary,
+                      size: 14,
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildInfoRow(
+                      Icons.medical_information_rounded,
+                      'উদ্দেশ্য',
+                      medicine.purpose,
+                      AppTheme.accentTeal,
+                    ),
+                    const SizedBox(height: 10),
+                    _buildInfoRow(
+                      Icons.medication_rounded,
+                      'ডোজ',
+                      _formatDosage(medicine.dosage),
+                      AppTheme.accentIndigo,
+                    ),
+                    _buildDosageVisuals(medicine.dosage),
+                    const SizedBox(height: 10),
+                    _buildInfoRow(
+                      Icons.calendar_today_rounded,
+                      'সময়কাল',
+                      medicine.duration,
+                      const Color(0xFFF59E0B),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(color: Color(0xFF263238), height: 1),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton.icon(
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppTheme.accentTeal,
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      ),
+                      onPressed: routeToDetail,
+                      icon: const Icon(Icons.visibility_rounded, size: 16),
+                      label: const Text(
+                        'বিস্তারিত দেখুন',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildInfoRow(
-                  Icons.medical_information_rounded,
-                  'উদ্দেশ্য',
-                  medicine.purpose,
-                  AppTheme.accentTeal,
-                ),
-                const SizedBox(height: 10),
-                _buildInfoRow(
-                  Icons.medication_rounded,
-                  'ডোজ',
-                  _formatDosage(medicine.dosage),
-                  AppTheme.accentIndigo,
-                ),
-                _buildDosageVisuals(medicine.dosage),
-                const SizedBox(height: 10),
-                _buildInfoRow(
-                  Icons.calendar_today_rounded,
-                  'সময়কাল',
-                  medicine.duration,
-                  const Color(0xFFF59E0B),
-                ),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
