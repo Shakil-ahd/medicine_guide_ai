@@ -18,6 +18,83 @@ class PrescriptionScanScreen extends StatefulWidget {
 
 class _PrescriptionScanScreenState extends State<PrescriptionScanScreen> {
   String? _selectedImagePath;
+  bool _isLoadingDialogShowing = false;
+  BuildContext? _dialogContext;
+
+  void _showLoadingDialog(BuildContext context) {
+    if (_isLoadingDialogShowing) return;
+    _isLoadingDialogShowing = true;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogCtx) {
+        _dialogContext = dialogCtx;
+        return WillPopScope(
+          onWillPop: () async => false,
+          child: AlertDialog(
+            backgroundColor: AppTheme.cardBg,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 10),
+                const CircularProgressIndicator(color: AppTheme.accentTeal),
+                const SizedBox(height: 24),
+                const Text(
+                  'প্রেসক্রিপশন বিশ্লেষণ করা হচ্ছে...',
+                  style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'এটি প্রায় ১৫-৩০ সেকেন্ড সময় নিতে পারে। অনুগ্রহ করে অপেক্ষা করুন।',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    context.read<PrescriptionBloc>().add(
+                          PrescriptionScanCancelRequested(),
+                        );
+                  },
+                  icon: const Icon(Icons.cancel_rounded),
+                  label: const Text('বাতিল করুন'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.warningRed,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _dismissLoadingDialog() {
+    if (_isLoadingDialogShowing && _dialogContext != null) {
+      Navigator.of(_dialogContext!).pop();
+      _isLoadingDialogShowing = false;
+      _dialogContext = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _dismissLoadingDialog();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,16 +102,34 @@ class _PrescriptionScanScreenState extends State<PrescriptionScanScreen> {
       create: (_) => PrescriptionBloc(GeminiService()),
       child: BlocListener<PrescriptionBloc, PrescriptionState>(
         listener: (context, state) {
-          if (state is PrescriptionLoaded || state is PrescriptionError) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => BlocProvider.value(
-                  value: context.read<PrescriptionBloc>(),
-                  child: const PrescriptionResultScreen(),
+          if (state is PrescriptionLoading) {
+            _showLoadingDialog(context);
+          } else {
+            _dismissLoadingDialog();
+            if (state is PrescriptionLoaded) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('প্রেসক্রিপশন সফলভাবে বিশ্লেষণ করা হয়েছে এবং হিস্ট্রিতে সংরক্ষণ করা হয়েছে।'),
+                  backgroundColor: AppTheme.accentTeal,
                 ),
-              ),
-            );
+              );
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => BlocProvider.value(
+                    value: context.read<PrescriptionBloc>(),
+                    child: const PrescriptionResultScreen(),
+                  ),
+                ),
+              );
+            } else if (state is PrescriptionError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: AppTheme.warningRed,
+                ),
+              );
+            }
           }
         },
         child: Scaffold(

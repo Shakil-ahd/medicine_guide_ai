@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -13,11 +14,16 @@ class NotificationService {
   Future<void> init() async {
     tz.initializeTimeZones();
     try {
-      tz.setLocalLocation(tz.getLocation('Asia/Dhaka'));
+      final timezoneInfo = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(timezoneInfo.identifier));
     } catch (_) {
       try {
-        tz.setLocalLocation(tz.getLocation('UTC'));
-      } catch (_) {}
+        tz.setLocalLocation(tz.getLocation('Asia/Dhaka'));
+      } catch (_) {
+        try {
+          tz.setLocalLocation(tz.getLocation('UTC'));
+        } catch (_) {}
+      }
     }
 
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -86,7 +92,7 @@ class NotificationService {
           body,
           scheduledDate,
           details,
-          androidScheduleMode: AndroidScheduleMode.inexact,
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
           matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
           uiLocalNotificationDateInterpretation:
               UILocalNotificationDateInterpretation.absoluteTime,

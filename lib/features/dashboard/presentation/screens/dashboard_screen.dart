@@ -147,7 +147,14 @@ class DashboardScreen extends StatelessWidget {
   ) {
     final isSelected = index == currentIndex;
     return GestureDetector(
-      onTap: () => context.read<NavigationBloc>().add(TabChanged(index)),
+      onTap: () {
+        context.read<NavigationBloc>().add(TabChanged(index));
+        if (index == 1) {
+          context.read<ReminderBloc>().add(LoadRemindersEvent());
+        } else if (index == 2) {
+          context.read<HistoryBloc>().add(LoadHistoryEvent());
+        }
+      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

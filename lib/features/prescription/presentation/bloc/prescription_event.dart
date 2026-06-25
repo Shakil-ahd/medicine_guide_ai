@@ -13,3 +13,5 @@ class PrescriptionScanRequested extends PrescriptionEvent {
   @override
   List<Object?> get props => [imagePath];
 }
+
+class PrescriptionScanCancelRequested extends PrescriptionEvent {}
