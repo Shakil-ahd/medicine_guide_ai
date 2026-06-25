@@ -45,6 +45,7 @@ class MedicineRepositoryImpl implements MedicineRepository {
       }
 
       final remoteMedicine = await _remoteDataSource.fetchMedicineDetails(
+        imagePath,
         ocrText,
       );
 

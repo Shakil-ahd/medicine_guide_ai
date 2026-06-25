@@ -19,17 +19,26 @@ class AppTheme {
         surface: cardBg,
         error: warningRed,
       ),
-      textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme).copyWith(
-        bodyMedium: GoogleFonts.hindSiliguri(
-          textStyle: const TextStyle(color: textPrimary, fontSize: 16),
-        ),
-        bodyLarge: GoogleFonts.hindSiliguri(
-          textStyle: const TextStyle(color: textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        titleLarge: GoogleFonts.outfit(
-          textStyle: const TextStyle(color: textPrimary, fontSize: 22, fontWeight: FontWeight.bold),
-        ),
-      ),
+      textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme)
+          .copyWith(
+            bodyMedium: GoogleFonts.hindSiliguri(
+              textStyle: const TextStyle(color: textPrimary, fontSize: 16),
+            ),
+            bodyLarge: GoogleFonts.hindSiliguri(
+              textStyle: const TextStyle(
+                color: textPrimary,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            titleLarge: GoogleFonts.outfit(
+              textStyle: const TextStyle(
+                color: textPrimary,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
       cardTheme: CardThemeData(
         color: cardBg,
         shape: RoundedRectangleBorder(

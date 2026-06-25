@@ -75,26 +75,34 @@ class GeminiService {
   }
 
   Future<Map<String, dynamic>?> fetchMedicineDetails(
+    String imagePath,
     String scannedText,
   ) async {
     final prompt =
-        'You are a medical assistant for Bangladesh. Analyze this OCR text from a medicine pack:\n'
-        '"$scannedText"\n'
-        'Return ONLY a valid JSON object (no markdown, no explanation) with this exact structure:\n'
+        'You are a medical assistant for Bangladesh. Look at this medicine pack image and analyze its text details.\n'
+        'OCR text helper: "$scannedText"\n'
+        'Identify the medicine correctly. Return ONLY a valid JSON object (no markdown, no explanation) with this exact structure:\n'
         '{"name":"medicine name in English","genericName":"generic/chemical name",'
         '"manufacturer":"company name","indications":"ব্যবহার বাংলায়",'
         '"sideEffects":"পার্শ্বপ্রতিক্রিয়া বাংলায়","dosage":"মাত্রা বাংলায়",'
         '"instructions":"সেবনবিধি বাংলায়","price":"প্রকৃত খুচরা মূল্য বাংলায় (যেমন: ৳১২ / ট্যাবলেট)",'
         '"genericAlternatives":[{"name":"alternative name","manufacturer":"manufacturer","price":"price"}]}\n'
         'Important guidelines:\n'
-        '1. Retrieve the actual, accurate market retail price in Bangladesh Taka (৳) from your knowledge base for the brand. Do not give arbitrary mock prices.\n'
-        '2. Provide actual alternative brands commonly available in Bangladesh with their current prices.';
+        '1. Ensure the medicine name, generic name, and manufacturer are 100% correct according to the image. Do not guess a wrong medicine name.\n'
+        '2. Retrieve the actual, accurate market retail price in Bangladesh Taka (৳) from your knowledge base for the brand. Do not give arbitrary mock prices.\n'
+        '3. Provide actual alternative brands commonly available in Bangladesh with their current prices.';
+
+    final mimeType = _getMimeType(imagePath);
 
     for (final modelName in _models) {
       try {
         print('Trying model: $modelName');
         final model = _buildModel(modelName);
-        final response = await model.generateContent([Content.text(prompt)]);
+        final bytes = await File(imagePath).readAsBytes();
+        final content = [
+          Content.multi([TextPart(prompt), DataPart(mimeType, bytes)]),
+        ];
+        final response = await model.generateContent(content);
         final text = response.text;
         if (text == null || text.trim().isEmpty) continue;
         final cleaned = _cleanJson(text);
@@ -120,8 +128,12 @@ class GeminiService {
           await Future.delayed(const Duration(seconds: 5));
           try {
             final model = _buildModel(modelName);
+            final bytes = await File(imagePath).readAsBytes();
+            final content = [
+              Content.multi([TextPart(prompt), DataPart(mimeType, bytes)]),
+            ];
             final response = await model.generateContent(
-              [Content.text(prompt)],
+              content,
             );
             final text = response.text;
             if (text != null && text.trim().isNotEmpty) {
