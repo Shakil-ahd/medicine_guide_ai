@@ -1,7 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
 import 'package:medicine_guide_ai/features/scanner/domain/entities/medicine.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:medicine_guide_ai/core/services/database_helper.dart';
+import 'package:medicine_guide_ai/features/scanner/data/models/medicine_model.dart';
 
 class MedicineDetailScreen extends StatefulWidget {
   final Medicine medicine;
@@ -278,71 +280,125 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
         ),
         const SizedBox(height: 12),
         ...medicine.genericAlternatives.map(
-          (alt) => Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: AppTheme.cardBg,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppTheme.accentTeal.withAlpha(50)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    color: AppTheme.accentTeal.withAlpha(20),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.medication_rounded,
-                    color: AppTheme.accentTeal,
-                    size: 22,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        alt.name,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textPrimary,
-                          fontSize: 15,
-                        ),
-                      ),
-                      Text(
-                        alt.manufacturer,
-                        style: const TextStyle(
-                          color: AppTheme.textSecondary,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppTheme.accentTeal.withAlpha(20),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    alt.price,
-                    style: const TextStyle(
+          (alt) => Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () async {
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (ctx) => const Center(
+                    child: CircularProgressIndicator(
                       color: AppTheme.accentTeal,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
                     ),
                   ),
+                );
+
+                try {
+                  final dbHelper = DatabaseHelper.instance;
+                  Map<String, dynamic>? row = await dbHelper.getMedicineByName(
+                    alt.name,
+                  );
+
+                  if (row == null) {
+                    final searchResults = await dbHelper.searchMedicines(
+                      alt.name,
+                    );
+                    if (searchResults.isNotEmpty) {
+                      row = searchResults.first;
+                    }
+                  }
+
+                  if (!mounted) return;
+                  Navigator.pop(context);
+
+                  if (row != null) {
+                    final medModel = MedicineModel.fromDbMap(row);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            MedicineDetailScreen(medicine: medModel),
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('ওষুধের বিস্তারিত তথ্য পাওয়া যায়নি'),
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) Navigator.pop(context);
+                }
+              },
+              borderRadius: BorderRadius.circular(14),
+              child: Ink(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppTheme.cardBg,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppTheme.accentTeal.withAlpha(50)),
                 ),
-              ],
+                child: Row(
+                  children: [
+                    Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentTeal.withAlpha(20),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.medication_rounded,
+                        color: AppTheme.accentTeal,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            alt.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.textPrimary,
+                              fontSize: 15,
+                            ),
+                          ),
+                          Text(
+                            alt.manufacturer,
+                            style: const TextStyle(
+                              color: AppTheme.textSecondary,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentTeal.withAlpha(20),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        alt.price,
+                        style: const TextStyle(
+                          color: AppTheme.accentTeal,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),

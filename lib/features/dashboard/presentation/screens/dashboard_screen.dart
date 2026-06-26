@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:medicine_guide_ai/core/constants/constants.dart';
@@ -24,6 +24,7 @@ import 'package:medicine_guide_ai/features/history/presentation/bloc/history_blo
 import 'package:medicine_guide_ai/features/history/presentation/bloc/history_event.dart';
 import 'package:medicine_guide_ai/features/history/presentation/screens/medical_diary_screen.dart';
 import 'package:medicine_guide_ai/features/settings/presentation/screens/settings_screen.dart';
+import 'package:medicine_guide_ai/features/scanner/presentation/screens/search_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -190,6 +191,8 @@ class DashboardScreen extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       children: [
         _buildWelcomeBanner(),
+        const SizedBox(height: 16),
+        _buildSearchBar(context),
         const SizedBox(height: 24),
         _buildSectionHeader('দ্রুত অ্যাক্সেস'),
         const SizedBox(height: 14),
@@ -202,6 +205,35 @@ class DashboardScreen extends StatelessWidget {
         _buildDisclaimer(),
         const SizedBox(height: 16),
       ],
+    );
+  }
+
+  Widget _buildSearchBar(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const SearchScreen()),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: AppTheme.cardBg,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFF263238)),
+        ),
+        child: const Row(
+          children: [
+            Icon(Icons.search_rounded, color: AppTheme.textSecondary),
+            SizedBox(width: 12),
+            Text(
+              'ওষুধের নাম বা জেনেরিক দিয়ে খুঁজুন...',
+              style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

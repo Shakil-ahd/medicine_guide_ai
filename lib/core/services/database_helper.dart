@@ -344,6 +344,19 @@ class DatabaseHelper {
     return null;
   }
 
+  Future<List<Map<String, dynamic>>> searchMedicines(String query, {bool searchByGeneric = false}) async {
+    final db = await instance.database;
+    if (query.trim().isEmpty) return [];
+
+    final searchField = searchByGeneric ? 'genericName' : 'name';
+    return await db.query(
+      'medicines',
+      where: '$searchField LIKE ?',
+      whereArgs: ['$query%'],
+      limit: 50,
+    );
+  }
+
   Future<void> close() async {
     final db = await instance.database;
     db.close();
