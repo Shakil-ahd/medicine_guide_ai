@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:medicine_guide_ai/core/config/secrets.dart';
+import 'package:translator/translator.dart';
 
 class GeminiService {
   static const List<String> _models = [
@@ -497,82 +498,39 @@ class GeminiService {
     required String dosage,
     required String instructions,
   }) async {
-    final prompt =
-        'Translate the following medical details of the medicine "$name" ($genericName) into clean, patient-friendly Bengali language. '
-        'Ensure medical terms are translated accurately and naturally. '
-        'Keep the output as a raw JSON object (no markdown, no extra explanation) with this exact structure:\n'
-        '{"indications":"অনুবাদিত নির্দেশনা","sideEffects":"অনুবাদিত পার্শ্বপ্রতিক্রিয়া","dosage":"অনুবাদিত মাত্রা","instructions":"অনুবাদিত সেবনবিধি"}\n\n'
-        'Details to translate:\n'
-        '- Indications: $indications\n'
-        '- Side Effects: $sideEffects\n'
-        '- Dosage: $dosage\n'
-        '- Instructions: $instructions';
+    final translator = GoogleTranslator();
 
-    final keys = _keys;
-    final totalKeys = keys.length;
-
-    _checkKeysAvailability();
-
-    for (int keyIndex = 0; keyIndex < totalKeys; keyIndex++) {
-      final key = keys[keyIndex];
-
-      if (_lastKnownStatus[keyIndex] == 'invalid') continue;
-
-      final expiry = _rateLimitExpiry[keyIndex];
-      if (expiry != null && DateTime.now().isBefore(expiry)) continue;
-
-      debugPrint('[GeminiService] --- Translation: Testing Key Index: $keyIndex ---');
-
-      for (final modelName in _models) {
-        try {
-          debugPrint('[GeminiService] Translating key=$keyIndex model=$modelName');
-          final model = _buildModel(modelName, apiKey: key);
-          final response = await model
-              .generateContent([Content.text(prompt)])
-              .timeout(
-                _timeout,
-                onTimeout: () => throw TimeoutException('Timeout on $modelName'),
-              );
-
-          final text = response.text;
-          if (text == null || text.trim().isEmpty) continue;
-
-          final cleaned = _cleanJson(text);
-          try {
-            final decoded = jsonDecode(cleaned);
-            if (decoded is Map<String, dynamic>) {
-              _currentKeyIndex = keyIndex;
-              _lastKnownStatus[keyIndex] = 'working';
-              
-              return {
-                'indications': decoded['indications']?.toString() ?? '',
-                'sideEffects': decoded['sideEffects']?.toString() ?? '',
-                'dosage': decoded['dosage']?.toString() ?? '',
-                'instructions': decoded['instructions']?.toString() ?? '',
-              };
-            }
-          } catch (e) {
-            debugPrint('[GeminiService] Translation JSON parse error: $e. Raw: $text');
-            continue;
-          }
-        } on TimeoutException {
-          continue;
-        } catch (e) {
-          if (_isNetworkError(e)) return null;
-          if (_isApiKeyInvalidError(e)) {
-            _lastKnownStatus[keyIndex] = 'invalid';
-            break;
-          }
-          if (_isQuotaError(e)) {
-            _lastKnownStatus[keyIndex] = 'rateLimited';
-            _rateLimitExpiry[keyIndex] = DateTime.now().add(const Duration(minutes: 5));
-            break;
-          }
-          continue;
-        }
+    Future<String> safeTranslate(String text) async {
+      if (text.trim().isEmpty) return '';
+      if (RegExp(r'[\u0980-\u09FF]').hasMatch(text)) {
+        return text;
+      }
+      try {
+        final res = await translator.translate(text, to: 'bn');
+        return res.text;
+      } catch (e) {
+        debugPrint('[Translator] Translation error: $e');
+        return text;
       }
     }
-    _checkKeysAvailability();
-    throw Exception('অনুবাদ করা সম্ভব হয়নি। অনুগ্রহ করে ইন্টারনেট সংযোগ চেক করুন।');
+
+    try {
+      final results = await Future.wait([
+        safeTranslate(indications),
+        safeTranslate(sideEffects),
+        safeTranslate(dosage),
+        safeTranslate(instructions),
+      ]);
+
+      return {
+        'indications': results[0],
+        'sideEffects': results[1],
+        'dosage': results[2],
+        'instructions': results[3],
+      };
+    } catch (e) {
+      debugPrint('[Translator] Parallel translation error: $e');
+      throw Exception('অনুবাদ করা সম্ভব হয়নি। অনুগ্রহ করে ইন্টারনেট সংযোগ চেক করুন।');
+    }
   }
 }
