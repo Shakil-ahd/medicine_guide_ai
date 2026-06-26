@@ -1,4 +1,8 @@
-﻿import 'dart:async';
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show rootBundle, ByteData;
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -18,11 +22,66 @@ class DatabaseHelper {
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
+
+    final exists = await databaseExists(path);
+    if (!exists) {
+      try {
+        await Directory(dirname(path)).create(recursive: true);
+        // Load the compressed database from assets
+        final ByteData data = await rootBundle.load(
+          join('assets', 'database', 'preseeded_medicines.db.gz'),
+        );
+        final List<int> compressedBytes = data.buffer.asUint8List(
+          data.offsetInBytes,
+          data.lengthInBytes,
+        );
+
+        // Decompress the database using GZipCodec
+        final List<int> decompressedBytes = GZipCodec().decode(compressedBytes);
+
+        // Write the decompressed database to local documents
+        await File(path).writeAsBytes(decompressedBytes, flush: true);
+        debugPrint(
+          'Successfully decompressed and copied preseeded database from assets',
+        );
+      } catch (e) {
+        debugPrint('Error decompressing preseeded database: $e');
+      }
+    }
+
     return await openDatabase(
       path,
       version: 4,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
+      onOpen: (db) async {
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS reminders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            medicineName TEXT,
+            time TEXT,
+            daysOfWeek TEXT,
+            isActive INTEGER,
+            doseDescription TEXT
+          )
+        ''');
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            medicineName TEXT,
+            scannedAt TEXT,
+            isOffline INTEGER,
+            imagePath TEXT,
+            prescriptionMedicinesJson TEXT
+          )
+        ''');
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS settings (
+            key TEXT PRIMARY KEY,
+            value TEXT
+          )
+        ''');
+      },
     );
   }
 
@@ -106,7 +165,9 @@ class DatabaseHelper {
         await db.execute('ALTER TABLE history ADD COLUMN imagePath TEXT');
       } catch (_) {}
       try {
-        await db.execute('ALTER TABLE history ADD COLUMN prescriptionMedicinesJson TEXT');
+        await db.execute(
+          'ALTER TABLE history ADD COLUMN prescriptionMedicinesJson TEXT',
+        );
       } catch (_) {}
     }
   }
@@ -128,7 +189,33 @@ class DatabaseHelper {
       whereArgs: [name.toLowerCase()],
     );
     if (results.isNotEmpty) {
-      return results.first;
+      final row = Map<String, dynamic>.from(results.first);
+      final genericName = row['genericName'] as String? ?? '';
+
+      try {
+        final alternatives = await db.query(
+          'medicines',
+          columns: ['name', 'manufacturer', 'price'],
+          where: 'LOWER(genericName) = ? AND LOWER(name) != ?',
+          whereArgs: [genericName.toLowerCase(), name.toLowerCase()],
+          limit: 3,
+        );
+
+        final mappedAlternatives = alternatives
+            .map(
+              (alt) => {
+                'name': alt['name'],
+                'manufacturer': alt['manufacturer'],
+                'price': alt['price'] ?? 'N/A',
+              },
+            )
+            .toList();
+
+        row['genericAlternativesJson'] = jsonEncode(mappedAlternatives);
+      } catch (_) {
+        row['genericAlternativesJson'] = '[]';
+      }
+      return row;
     }
     return null;
   }
@@ -169,7 +256,8 @@ class DatabaseHelper {
     } else {
       existing = await db.query(
         'history',
-        where: 'LOWER(medicineName) = ? AND (imagePath IS NULL OR imagePath = "")',
+        where:
+            'LOWER(medicineName) = ? AND (imagePath IS NULL OR imagePath = "")',
         whereArgs: [medicineName.toLowerCase()],
       );
     }
@@ -213,87 +301,33 @@ class DatabaseHelper {
       final countResult = Sqflite.firstIntValue(
         await db.rawQuery('SELECT COUNT(*) FROM medicines'),
       );
-      if (countResult == 0) {
-        await _seedDatabase(db);
+      if (countResult == null || countResult < 20000) {
+        debugPrint(
+          'Database has incomplete data ($countResult rows). Re-copying preseeded database...',
+        );
+        try {
+          await db.close();
+        } catch (_) {}
+        _database = null;
+
+        final dbPath = await getDatabasesPath();
+        final path = join(dbPath, 'medicine_guide.db');
+        final file = File(path);
+        if (await file.exists()) {
+          await file.delete();
+        }
+
+        _database = await _initDB('medicine_guide.db');
       }
     } catch (_) {}
   }
 
-  Future<void> _seedDatabase(Database db) async {
-    final List<Map<String, dynamic>> initialMedicines = [
-      {
-        'name': 'Napa',
-        'genericName': 'Paracetamol',
-        'manufacturer': 'Beximco Pharmaceuticals Ltd.',
-        'indications': 'জ্বর, মাথাব্যথা, দাঁত ব্যথা এবং শরীর ব্যথার উপশম।',
-        'sideEffects': 'সাধারণত পার্শ্বপ্রতিক্রিয়া নেই। তবে অতিরিক্ত মাত্রায় সেবনে লিভারের ক্ষতি হতে পারে।',
-        'dosage': 'প্রাপ্তবয়স্ক: ১-২টি ট্যাবলেট দিনে ৩-৪ বার।',
-        'instructions': 'খাবারের পর পর্যাপ্ত জল দিয়ে সেবন করুন।',
-        'price': '৳১.২ / ট্যাবলেট',
-        'genericAlternativesJson': '[{"name":"Ace","manufacturer":"Square Pharmaceuticals","price":"৳১.২"},{"name":"Fast","manufacturer":"Acme Laboratories","price":"৳১.২"},{"name":"Pyrexin","manufacturer":"Incepta","price":"৳১.০"}]',
-      },
-      {
-        'name': 'Napa Extra',
-        'genericName': 'Paracetamol + Caffeine',
-        'manufacturer': 'Beximco Pharmaceuticals Ltd.',
-        'indications': 'তীব্র মাথাব্যথা, মাইগ্রেন, দাঁত ব্যথা এবং জ্বরের দ্রুত উপশম।',
-        'sideEffects': 'বুক ধড়ফড় করা, অনিদ্রা বা অস্থিরতা (ক্যাফেইনের কারণে)।',
-        'dosage': 'প্রাপ্তবয়স্ক: ১-২টি ট্যাবলেট দিনে ৩-৪ বার।',
-        'instructions': 'খাবারের পর পর্যাপ্ত জল দিয়ে সেবন করুন। রাতে ঘুমানোর আগে না নেওয়া ভালো।',
-        'price': '৳২.৫ / ট্যাবলেট',
-        'genericAlternativesJson': '[{"name":"Ace Plus","manufacturer":"Square Pharmaceuticals","price":"৳২.৫"},{"name":"Fast Plus","manufacturer":"Acme Laboratories","price":"৳২.৫"},{"name":"Extraol","manufacturer":"Incepta","price":"৳২.২"}]',
-      },
-      {
-        'name': 'Seclo 20',
-        'genericName': 'Omeprazole 20mg',
-        'manufacturer': 'Square Pharmaceuticals Ltd.',
-        'indications': 'গ্যাস্ট্রিক আলসার, বুক জ্বালাপোড়া, এসিডিটি এবং গ্যাস্ট্রিকের সমস্যা উপশম।',
-        'sideEffects': 'মাথাব্যথা, ডায়রিয়া, কোষ্ঠকাঠিন্য বা পেট ফাঁপা।',
-        'dosage': '১টি ক্যাপসুল দিনে ১-২ বার।',
-        'instructions': 'খাবারের ৩০ মিনিট আগে খালি পেটে সেবন করুন।',
-        'price': '৳৭.০ / ক্যাপসুল',
-        'genericAlternativesJson': '[{"name":"Losec 20","manufacturer":"Beximco","price":"৳৬.০"},{"name":"Proceptin 20","manufacturer":"Incepta","price":"৳৭.০"},{"name":"Xeldrin 20","manufacturer":"Acme","price":"৳৬.৫"}]',
-      },
-      {
-        'name': 'Fexo 120',
-        'genericName': 'Fexofenadine Hydrochloride 120mg',
-        'manufacturer': 'Square Pharmaceuticals Ltd.',
-        'indications': 'অ্যালার্জিজনিত সর্দি, হাঁচি, চুলকানি এবং চোখ দিয়ে জল পড়া।',
-        'sideEffects': 'সামান্য ঝিমুনি, মাথাব্যথা, মুখ শুকিয়ে যাওয়া।',
-        'dosage': 'প্রাপ্তবয়স্ক: ১টি ট্যাবলেট দিনে ১ বার।',
-        'instructions': 'খাবারের আগে বা পরে জল দিয়ে সেবন করা যায়।',
-        'price': '৳৮.০ / ট্যাবলেট',
-        'genericAlternativesJson': '[{"name":"Fexofast 120","manufacturer":"Beximco","price":"৳৮.০"},{"name":"Axodin 120","manufacturer":"Acme","price":"৳৭.৫"},{"name":"Telfast 120","manufacturer":"Sanofi","price":"৳৯.০"}]',
-      },
-      {
-        'name': 'Sergel 20',
-        'genericName': 'Esomeprazole 20mg',
-        'manufacturer': 'Incepta Pharmaceuticals Ltd.',
-        'indications': 'তীব্র গ্যাস্ট্রিক আলসার, বুক জ্বালাপোড়া এবং টক ঢেকুর।',
-        'sideEffects': 'মাথাব্যথা, পেট ব্যথা, বমি বমি ভাব।',
-        'dosage': '১টি ক্যাপসুল দিনে ২ বার।',
-        'instructions': 'খাবারের ৩০ মিনিট আগে সেবন করুন।',
-        'price': '৳৮.০ / ক্যাপসুল',
-        'genericAlternativesJson': '[{"name":"Maxpro 20","manufacturer":"Renata","price":"৳৮.০"},{"name":"Nexum 20","manufacturer":"Square","price":"৳৮.০"},{"name":"Optimo 20","manufacturer":"Beximco","price":"৳৭.৫"}]',
-      },
-    ];
-
-    for (final med in initialMedicines) {
-      await db.insert(
-        'medicines',
-        med,
-        conflictAlgorithm: ConflictAlgorithm.ignore,
-      );
-    }
-  }
-
   Future<void> saveSetting(String key, String value) async {
     final db = await instance.database;
-    await db.insert(
-      'settings',
-      {'key': key, 'value': value},
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    await db.insert('settings', {
+      'key': key,
+      'value': value,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<String?> getSetting(String key) async {

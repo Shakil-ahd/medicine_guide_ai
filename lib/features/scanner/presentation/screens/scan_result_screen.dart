@@ -1,4 +1,4 @@
-﻿import 'dart:io';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medicine_guide_ai/core/constants/constants.dart';
@@ -519,6 +519,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                           fontSize: 15,
                         ),
                       ),
+                      const SizedBox(height: 2),
                       Text(
                         alt.manufacturer,
                         style: const TextStyle(
@@ -526,22 +527,18 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                           fontSize: 12,
                         ),
                       ),
+                      if (alt.price.isNotEmpty && alt.price != 'N/A') ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          alt.price,
+                          style: const TextStyle(
+                            color: AppTheme.accentTeal,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
                     ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: AppTheme.accentTeal.withAlpha(20),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    alt.price,
-                    style: const TextStyle(
-                      color: AppTheme.accentTeal,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                    ),
                   ),
                 ),
               ],
