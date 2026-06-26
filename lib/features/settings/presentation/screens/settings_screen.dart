@@ -1,9 +1,52 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:medicine_guide_ai/core/constants/constants.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObserver {
+  static const _channel = MethodChannel('com.mediscanai.app/battery');
+  bool _isIgnoringBattery = true;
+  bool _canScheduleExactAlarms = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _checkPermissions();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _checkPermissions();
+    }
+  }
+
+  Future<void> _checkPermissions() async {
+    try {
+      final ignoring = await _channel.invokeMethod<bool>('isIgnoringBatteryOptimizations') ?? true;
+      final canSchedule = await _channel.invokeMethod<bool>('canScheduleExactAlarms') ?? true;
+      if (mounted) {
+        setState(() {
+          _isIgnoringBattery = ignoring;
+          _canScheduleExactAlarms = canSchedule;
+        });
+      }
+    } catch (_) {}
+  }
 
   void _showDisclaimer(BuildContext context) {
     _showBottomSheetDialog(
@@ -520,6 +563,50 @@ class SettingsScreen extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
               child: _buildQuickStats(),
+            ),
+          ),
+
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 28, 20, 8),
+              child: _buildSectionHeader(
+                'সিস্টেম পারমিশন',
+                Icons.settings_suggest_rounded,
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            sliver: SliverToBoxAdapter(
+              child: _buildSettingsGroup([
+                _SettingsTileData(
+                  icon: Icons.battery_saver_rounded,
+                  iconColor: _isIgnoringBattery ? AppTheme.accentTeal : AppTheme.warningRed,
+                  title: 'ব্যাকগ্রাউন্ড ব্যাটারি সচলতা',
+                  subtitle: _isIgnoringBattery ? 'অনুমোদিত (রিমাইন্ডার অন-টাইমে বাজবে)' : 'সীমাবদ্ধ (রিমাইন্ডার বিলম্বিত হতে পারে)',
+                  trailing: _isIgnoringBattery ? 'সচল' : 'ঠিক করুন',
+                  trailingIsLabel: _isIgnoringBattery,
+                  onTap: _isIgnoringBattery
+                      ? () {}
+                      : () async {
+                          await _channel.invokeMethod('requestIgnoreBatteryOptimizations');
+                        },
+                ),
+                _SettingsTileData(
+                  icon: Icons.alarm_rounded,
+                  iconColor: _canScheduleExactAlarms ? AppTheme.accentTeal : AppTheme.warningRed,
+                  title: 'অ্যালার্ম ও রিমাইন্ডার',
+                  subtitle: _canScheduleExactAlarms ? 'অনুমোদিত (অন-টাইম অ্যালার্ম সচল)' : 'বন্ধ (রিমাইন্ডার কাজ নাও করতে পারে)',
+                  trailing: _canScheduleExactAlarms ? 'সচল' : 'চালু করুন',
+                  trailingIsLabel: _canScheduleExactAlarms,
+                  onTap: _canScheduleExactAlarms
+                      ? () {}
+                      : () async {
+                          await _channel.invokeMethod('requestExactAlarmPermission');
+                        },
+                  isLast: true,
+                ),
+              ]),
             ),
           ),
 

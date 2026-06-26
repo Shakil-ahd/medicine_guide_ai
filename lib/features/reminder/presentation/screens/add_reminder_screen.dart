@@ -147,6 +147,67 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
       // Ignore errors on non-Android platforms
     }
 
+    // Check exact alarm permission status on Android
+    try {
+      final bool canSchedule = await _channel.invokeMethod('canScheduleExactAlarms');
+      if (!canSchedule && mounted) {
+        final bool? proceed = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: AppTheme.cardBg,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: AppTheme.accentTeal.withAlpha(40)),
+            ),
+            title: const Row(
+              children: [
+                Icon(Icons.alarm_on_rounded, color: AppTheme.accentTeal),
+                SizedBox(width: 10),
+                Text(
+                  'অ্যালার্ম ও রিমাইন্ডার',
+                  style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            content: const Text(
+              'সঠিক সময়ে ওষুধের অ্যালার্ম বাজাতে অ্যাপটির জন্য "অ্যালার্ম ও রিমাইন্ডার" (Alarms & Reminders) পারমিশন প্রয়োজন। আপনি কি এটি চালু করতে চান?',
+              style: TextStyle(color: AppTheme.textSecondary, height: 1.5, fontSize: 13),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text(
+                  'পরে করব',
+                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.accentTeal,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text('চালু করুন', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        );
+
+        if (proceed == true && mounted) {
+          await _channel.invokeMethod('requestExactAlarmPermission');
+        }
+      }
+    } catch (_) {
+      // Ignore errors on non-Android platforms
+    }
+
     final reminder = Reminder(
       id: widget.existing?.id,
       medicineName: _nameController.text.trim(),

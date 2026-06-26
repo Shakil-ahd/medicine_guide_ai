@@ -97,20 +97,52 @@ class GeminiService {
   static final Map<int, String> _lastKnownStatus = {};
   static final Map<int, DateTime> _rateLimitExpiry = {};
 
-  bool hasAnyWorkingKey() {
+  void _checkKeysAvailability() {
     final keys = _keys;
-    final now = DateTime.now();
-    for (int i = 0; i < keys.length; i++) {
-      if (_lastKnownStatus[i] == 'invalid') {
-        continue;
-      }
-      final expiry = _rateLimitExpiry[i];
-      if (expiry != null && now.isBefore(expiry)) {
-        continue;
-      }
-      return true;
+    final total = keys.length;
+    if (total == 0) {
+      throw Exception('কোনো এপিআই কি (API Key) কনফিগার করা নেই।');
     }
-    return false;
+
+    int invalidCount = 0;
+    int rateLimitCount = 0;
+    final now = DateTime.now();
+
+    for (int i = 0; i < total; i++) {
+      if (_lastKnownStatus[i] == 'invalid') {
+        invalidCount++;
+      } else {
+        final expiry = _rateLimitExpiry[i];
+        if (expiry != null && now.isBefore(expiry)) {
+          rateLimitCount++;
+        }
+      }
+    }
+
+    if (invalidCount == total) {
+      throw Exception(
+        'আপনার এপিআই কি (API Key) সঠিক নয়। অনুগ্রহ করে কোডের secrets.dart ফাইলে সঠিক API Key সেট করুন।',
+      );
+    }
+    if (rateLimitCount == total) {
+      throw Exception(
+        'কোটা শেষ হয়ে গেছে। অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।',
+      );
+    }
+    if (invalidCount + rateLimitCount == total) {
+      throw Exception(
+        'সচল এপিআই কি (API Key) পাওয়া যায়নি। কোটা শেষ অথবা কি-গুলো সঠিক নয়।',
+      );
+    }
+  }
+
+  bool hasAnyWorkingKey() {
+    try {
+      _checkKeysAvailability();
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<List<Map<String, dynamic>>> checkAllKeysStatus() async {
@@ -214,11 +246,7 @@ class GeminiService {
     final keys = _keys;
     final totalKeys = keys.length;
 
-    if (!hasAnyWorkingKey()) {
-      throw Exception(
-        'আজকের লিমিট শেষ। অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।',
-      );
-    }
+    _checkKeysAvailability();
 
     for (int keyIndex = 0; keyIndex < totalKeys; keyIndex++) {
       final key = keys[keyIndex];
@@ -320,7 +348,10 @@ class GeminiService {
     }
 
     debugPrint('[GeminiService] All keys and models completely exhausted.');
-    return null;
+    _checkKeysAvailability();
+    throw Exception(
+      'ওষুধের তথ্য সংগ্রহ করা যায়নি। অনুগ্রহ করে স্পষ্ট ছবি আপলোড করুন।',
+    );
   }
 
   Future<List<dynamic>?> parsePrescription(String imagePath) async {
@@ -351,11 +382,7 @@ class GeminiService {
     final keys = _keys;
     final totalKeys = keys.length;
 
-    if (!hasAnyWorkingKey()) {
-      throw Exception(
-        'আজকের লিমিট শেষ। অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।',
-      );
-    }
+    _checkKeysAvailability();
 
     for (int keyIndex = 0; keyIndex < totalKeys; keyIndex++) {
       final key = keys[keyIndex];
@@ -457,6 +484,9 @@ class GeminiService {
     }
 
     debugPrint('[GeminiService] All keys and models completely exhausted.');
-    return null;
+    _checkKeysAvailability();
+    throw Exception(
+      'প্রেসক্রিপশনটি পড়া যায়নি। অনুগ্রহ করে প্রেসক্রিপশনটির একটি স্পষ্ট ছবি তুলুন।',
+    );
   }
 }
