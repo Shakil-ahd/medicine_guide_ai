@@ -27,6 +27,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
   late String _instructions;
   final Set<String> _expandedSections = {};
   Medicine? _loadedMedicine;
+  bool _isBengali = false;
 
   @override
   void initState() {
@@ -41,6 +42,20 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
 
   bool _isAlreadyBengali(String text) {
     return RegExp(r'[\u0980-\u09FF]').hasMatch(text);
+  }
+
+  void _toggleLanguage(Medicine medicine) {
+    if (_isBengali) {
+      setState(() {
+        _indications = medicine.indications;
+        _sideEffects = medicine.sideEffects;
+        _dosage = medicine.dosage;
+        _instructions = medicine.instructions;
+        _isBengali = false;
+      });
+    } else {
+      _translateToBengali(medicine);
+    }
   }
 
   Future<void> _translateToBengali(Medicine medicine) async {
@@ -67,8 +82,6 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
       Navigator.pop(context);
 
       if (translated != null) {
-        await DatabaseHelper.instance.updateMedicineDetails(medicine.name, translated);
-
         if (!mounted) return;
 
         setState(() {
@@ -76,6 +89,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
           _sideEffects = translated['sideEffects']!;
           _dosage = translated['dosage']!;
           _instructions = translated['instructions']!;
+          _isBengali = true;
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -123,6 +137,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
               _sideEffects = state.medicine.sideEffects;
               _dosage = state.medicine.dosage;
               _instructions = state.medicine.instructions;
+              _isBengali = _isAlreadyBengali(_indications);
             }
             return _buildResultView(context, state.medicine);
           } else if (state is MedicineError) {
@@ -385,8 +400,6 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
   }
 
   Widget _buildMedicineHeader(Medicine medicine) {
-    final showTranslateBtn = !_isAlreadyBengali(_indications);
-
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -434,41 +447,26 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
               ),
             ],
           ),
-          if (showTranslateBtn) ...[
-            const SizedBox(height: 14),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () => _translateToBengali(medicine),
-                icon: const Icon(Icons.g_translate_rounded, size: 16),
-                label: const Text('বাংলায় অনুবাদ করুন (AI)'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppTheme.accentTeal,
-                  side: const BorderSide(color: AppTheme.accentTeal),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 10),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => _toggleLanguage(medicine),
+              icon: Icon(
+                _isBengali ? Icons.language_rounded : Icons.g_translate_rounded,
+                size: 16,
+              ),
+              label: Text(_isBengali ? 'ইংরেজিতে দেখুন (English)' : 'বাংলায় অনুবাদ করুন (Translate)'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppTheme.accentTeal,
+                side: const BorderSide(color: AppTheme.accentTeal),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
+                padding: const EdgeInsets.symmetric(vertical: 10),
               ),
             ),
-          ] else ...[
-            const SizedBox(height: 14),
-            Row(
-              children: [
-                Icon(Icons.check_circle_outline_rounded, color: AppTheme.accentTeal.withAlpha(180), size: 14),
-                const SizedBox(width: 6),
-                const Text(
-                  'বিবরণ বাংলায় অনূদিত',
-                  style: TextStyle(
-                    color: AppTheme.accentTeal,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ]
+          ),
         ],
       ),
     );
