@@ -1,4 +1,5 @@
-﻿import 'package:medicine_guide_ai/features/scanner/domain/entities/generic_alternative.dart';
+import 'package:medicine_guide_ai/features/scanner/domain/entities/generic_alternative.dart';
+import 'package:medicine_guide_ai/features/scanner/data/models/medicine_model.dart';
 
 class GenericAlternativeModel extends GenericAlternative {
   const GenericAlternativeModel({
@@ -9,7 +10,7 @@ class GenericAlternativeModel extends GenericAlternative {
 
   factory GenericAlternativeModel.fromJson(Map<String, dynamic> json) {
     return GenericAlternativeModel(
-      name: json['name'] ?? '',
+      name: MedicineModel.cleanName(json['name'] ?? ''),
       manufacturer: json['manufacturer'] ?? '',
       price: json['price'] ?? '',
     );

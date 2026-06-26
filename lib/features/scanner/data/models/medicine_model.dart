@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'package:medicine_guide_ai/features/scanner/domain/entities/medicine.dart';
 import 'package:medicine_guide_ai/features/scanner/data/models/generic_alternative_model.dart';
 
@@ -16,6 +16,14 @@ class MedicineModel extends Medicine {
     required super.genericAlternatives,
   });
 
+  static String cleanName(String name) {
+    return name
+        .replaceAll(RegExp(r'\s*w/w\b', caseSensitive: false), '')
+        .replaceAll(RegExp(r'\s*w/v\b', caseSensitive: false), '')
+        .replaceAll(RegExp(r'\s*v/v\b', caseSensitive: false), '')
+        .trim();
+  }
+
   factory MedicineModel.fromJson(Map<String, dynamic> json) {
     var alternativesList = json['genericAlternatives'] as List? ?? [];
     List<GenericAlternativeModel> alternatives = alternativesList
@@ -24,7 +32,7 @@ class MedicineModel extends Medicine {
 
     return MedicineModel(
       id: json['id'] as int?,
-      name: json['name'] ?? '',
+      name: cleanName(json['name'] ?? ''),
       genericName: json['genericName'] ?? '',
       manufacturer: json['manufacturer'] ?? '',
       indications: json['indications'] ?? '',
@@ -67,7 +75,7 @@ class MedicineModel extends Medicine {
 
     return MedicineModel(
       id: map['id'] as int?,
-      name: map['name'] ?? '',
+      name: cleanName(map['name'] ?? ''),
       genericName: map['genericName'] ?? '',
       manufacturer: map['manufacturer'] ?? '',
       indications: map['indications'] ?? '',

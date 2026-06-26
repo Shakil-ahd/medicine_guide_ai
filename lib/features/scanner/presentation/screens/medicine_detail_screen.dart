@@ -4,6 +4,7 @@ import 'package:medicine_guide_ai/features/scanner/domain/entities/medicine.dart
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:medicine_guide_ai/core/services/database_helper.dart';
 import 'package:medicine_guide_ai/features/scanner/data/models/medicine_model.dart';
+import 'package:medicine_guide_ai/core/services/gemini_service.dart';
 
 class MedicineDetailScreen extends StatefulWidget {
   final Medicine medicine;
@@ -17,9 +18,19 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
   final FlutterTts _flutterTts = FlutterTts();
   bool _isPlaying = false;
 
+  late String _indications;
+  late String _sideEffects;
+  late String _dosage;
+  late String _instructions;
+  final Set<String> _expandedSections = {};
+
   @override
   void initState() {
     super.initState();
+    _indications = widget.medicine.indications;
+    _sideEffects = widget.medicine.sideEffects;
+    _dosage = widget.medicine.dosage;
+    _instructions = widget.medicine.instructions;
     _initTts();
   }
 
@@ -41,8 +52,8 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
     final m = widget.medicine;
     final text =
         "${m.name}. জেনেরিক নাম: ${m.genericName}. "
-        "নির্দেশনা: ${m.indications}. সেবনমাত্রা: ${m.dosage}. "
-        "খাওয়ার নিয়ম: ${m.instructions}";
+        "নির্দেশনা: $_indications. সেবনমাত্রা: $_dosage. "
+        "খাওয়ার নিয়ম: $_instructions";
 
     if (_isPlaying) {
       await _flutterTts.stop();
@@ -78,28 +89,28 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                   const SizedBox(height: 20),
                   _buildInfoSection(
                     "নির্দেশনা",
-                    m.indications,
+                    _indications,
                     Icons.healing_rounded,
                     AppTheme.accentTeal,
                   ),
                   const SizedBox(height: 12),
                   _buildInfoSection(
                     "সেবনমাত্রা",
-                    m.dosage,
+                    _dosage,
                     Icons.medical_services_rounded,
                     const Color(0xFF42A5F5),
                   ),
                   const SizedBox(height: 12),
                   _buildInfoSection(
                     "খাওয়ার নিয়ম",
-                    m.instructions,
+                    _instructions,
                     Icons.info_outline_rounded,
                     const Color(0xFFA78BFA),
                   ),
                   const SizedBox(height: 12),
                   _buildInfoSection(
                     "পার্শ্বপ্রতিক্রিয়া",
-                    m.sideEffects,
+                    _sideEffects,
                     Icons.report_problem_rounded,
                     AppTheme.warningRed,
                   ),
@@ -125,7 +136,66 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
     );
   }
 
+  bool _isAlreadyBengali(String text) {
+    return RegExp(r'[\u0980-\u09FF]').hasMatch(text);
+  }
+
+  Future<void> _translateToBengali(Medicine medicine) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const Center(
+        child: CircularProgressIndicator(color: AppTheme.accentTeal),
+      ),
+    );
+
+    try {
+      final geminiService = GeminiService();
+      final translated = await geminiService.translateMedicineDetails(
+        name: medicine.name,
+        genericName: medicine.genericName,
+        indications: _indications,
+        sideEffects: _sideEffects,
+        dosage: _dosage,
+        instructions: _instructions,
+      );
+
+      if (!mounted) return;
+      Navigator.pop(context);
+
+      if (translated != null) {
+        await DatabaseHelper.instance.updateMedicineDetails(medicine.name, translated);
+
+        if (!mounted) return;
+
+        setState(() {
+          _indications = translated['indications']!;
+          _sideEffects = translated['sideEffects']!;
+          _dosage = translated['dosage']!;
+          _instructions = translated['instructions']!;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('সফলভাবে বাংলায় অনুবাদ করা হয়েছে!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) Navigator.pop(context);
+      if (mounted) {
+        var errorMsg = e.toString();
+        if (errorMsg.startsWith('Exception: ')) {
+          errorMsg = errorMsg.substring(11);
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMsg)),
+        );
+      }
+    }
+  }
+
   Widget _buildMedicineHeader(Medicine medicine) {
+    final showTranslateBtn = !_isAlreadyBengali(_indications);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -170,6 +240,41 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
               ),
             ],
           ),
+          if (showTranslateBtn) ...[
+            const SizedBox(height: 14),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => _translateToBengali(medicine),
+                icon: const Icon(Icons.g_translate_rounded, size: 16),
+                label: const Text('বাংলায় অনুবাদ করুন (AI)'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppTheme.accentTeal,
+                  side: const BorderSide(color: AppTheme.accentTeal),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                ),
+              ),
+            ),
+          ] else ...[
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Icon(Icons.check_circle_outline_rounded, color: AppTheme.accentTeal.withAlpha(180), size: 14),
+                const SizedBox(width: 6),
+                const Text(
+                  'বিবরণ বাংলায় অনূদিত',
+                  style: TextStyle(
+                    color: AppTheme.accentTeal,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ]
         ],
       ),
     );
@@ -204,6 +309,20 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
     IconData icon,
     Color color,
   ) {
+    if (content.isEmpty) {
+      content = 'তথ্য পাওয়া যায়নি';
+    }
+
+    final isLong = content.length > 150;
+    final isExpanded = _expandedSections.contains(title);
+    
+    final String displayContent;
+    if (isLong && !isExpanded) {
+      displayContent = '${content.substring(0, 150)}...';
+    } else {
+      displayContent = content;
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -238,13 +357,48 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  content.isEmpty ? 'তথ্য পাওয়া যায়নি' : content,
+                  displayContent,
                   style: const TextStyle(
                     fontSize: 15,
                     color: AppTheme.textPrimary,
                     height: 1.5,
                   ),
                 ),
+                if (isLong) ...[
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        if (isExpanded) {
+                          _expandedSections.remove(title);
+                        } else {
+                          _expandedSections.add(title);
+                        }
+                      });
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          isExpanded ? 'কমিয়ে দেখান' : 'আরও পড়ুন',
+                          style: TextStyle(
+                            color: color,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(
+                          isExpanded
+                              ? Icons.keyboard_arrow_up_rounded
+                              : Icons.keyboard_arrow_down_rounded,
+                          color: color,
+                          size: 16,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -368,6 +522,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                               fontSize: 15,
                             ),
                           ),
+                          const SizedBox(height: 2),
                           Text(
                             alt.manufacturer,
                             style: const TextStyle(
@@ -375,25 +530,18 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                               fontSize: 12,
                             ),
                           ),
+                          if (alt.price.isNotEmpty && alt.price != 'N/A') ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              alt.price,
+                              style: const TextStyle(
+                                color: AppTheme.accentTeal,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
                         ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppTheme.accentTeal.withAlpha(20),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        alt.price,
-                        style: const TextStyle(
-                          color: AppTheme.accentTeal,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
                       ),
                     ),
                   ],

@@ -349,11 +349,62 @@ class DatabaseHelper {
     if (query.trim().isEmpty) return [];
 
     final searchField = searchByGeneric ? 'genericName' : 'name';
-    return await db.query(
+    final results = await db.query(
       'medicines',
       where: '$searchField LIKE ?',
       whereArgs: ['$query%'],
       limit: 50,
+    );
+
+    if (results.isEmpty) return [];
+
+    final List<Map<String, dynamic>> enrichedResults = [];
+    for (final rawRow in results) {
+      final row = Map<String, dynamic>.from(rawRow);
+      final genericName = row['genericName'] as String? ?? '';
+      final name = row['name'] as String? ?? '';
+
+      try {
+        final alternatives = await db.query(
+          'medicines',
+          columns: ['name', 'manufacturer', 'price'],
+          where: 'LOWER(genericName) = ? AND LOWER(name) != ?',
+          whereArgs: [genericName.toLowerCase(), name.toLowerCase()],
+          limit: 3,
+        );
+
+        final mappedAlternatives = alternatives
+            .map(
+              (alt) => {
+                'name': alt['name'],
+                'manufacturer': alt['manufacturer'],
+                'price': alt['price'] ?? 'N/A',
+              },
+            )
+            .toList();
+
+        row['genericAlternativesJson'] = jsonEncode(mappedAlternatives);
+      } catch (_) {
+        row['genericAlternativesJson'] = '[]';
+      }
+      enrichedResults.add(row);
+    }
+
+    return enrichedResults;
+  }
+
+  Future<int> updateMedicineDetails(String name, Map<String, String> details) async {
+    final db = await instance.database;
+    return await db.update(
+      'medicines',
+      {
+        'indications': details['indications'],
+        'sideEffects': details['sideEffects'],
+        'dosage': details['dosage'],
+        'instructions': details['instructions'],
+      },
+      where: 'LOWER(name) = ?',
+      whereArgs: [name.toLowerCase()],
     );
   }
 

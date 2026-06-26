@@ -191,8 +191,6 @@ class DashboardScreen extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       children: [
         _buildWelcomeBanner(),
-        const SizedBox(height: 16),
-        _buildSearchBar(context),
         const SizedBox(height: 24),
         _buildSectionHeader('দ্রুত অ্যাক্সেস'),
         const SizedBox(height: 14),
@@ -205,35 +203,6 @@ class DashboardScreen extends StatelessWidget {
         _buildDisclaimer(),
         const SizedBox(height: 16),
       ],
-    );
-  }
-
-  Widget _buildSearchBar(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const SearchScreen()),
-        );
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: AppTheme.cardBg,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFF263238)),
-        ),
-        child: const Row(
-          children: [
-            Icon(Icons.search_rounded, color: AppTheme.textSecondary),
-            SizedBox(width: 12),
-            Text(
-              'ওষুধের নাম বা জেনেরিক দিয়ে খুঁজুন...',
-              style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -327,31 +296,118 @@ class DashboardScreen extends StatelessWidget {
   }
 
   Widget _buildFeatureGrid(BuildContext context) {
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          child: _buildFeatureCard(
-            title: AppConstants.scanMedicine,
-            subtitle: 'ক্যামেরা দিয়ে স্ক্যান করুন',
-            icon: Icons.document_scanner_rounded,
-            gradientColors: [const Color(0xFF00897B), const Color(0xFF00BFA5)],
-            onTap: () => _showScanBottomSheet(context),
-          ),
-        ),
-        const SizedBox(width: 14),
-        Expanded(
-          child: _buildFeatureCard(
-            title: AppConstants.prescriptionReader,
-            subtitle: 'হাতের লেখা পড়ুন',
-            icon: Icons.description_rounded,
-            gradientColors: [const Color(0xFF3949AB), const Color(0xFF5C6BC0)],
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const PrescriptionScanScreen()),
+        Row(
+          children: [
+            Expanded(
+              child: _buildFeatureCard(
+                title: AppConstants.scanMedicine,
+                subtitle: 'ক্যামেরা দিয়ে স্ক্যান করুন',
+                icon: Icons.document_scanner_rounded,
+                gradientColors: [const Color(0xFF00897B), const Color(0xFF00BFA5)],
+                onTap: () => _showScanBottomSheet(context),
+              ),
             ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: _buildFeatureCard(
+                title: AppConstants.prescriptionReader,
+                subtitle: 'হাতের লেখা পড়ুন',
+                icon: Icons.description_rounded,
+                gradientColors: [const Color(0xFF3949AB), const Color(0xFF5C6BC0)],
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PrescriptionScanScreen()),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        _buildFeatureCardFullWidth(
+          context: context,
+          title: 'ওষুধ খুঁজুন',
+          subtitle: 'নাম বা জেনেরিক দিয়ে ম্যানুয়ালি খুঁজুন',
+          icon: Icons.search_rounded,
+          gradientColors: [const Color(0xFFD81B60), const Color(0xFFEC407A)],
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const SearchScreen()),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildFeatureCardFullWidth({
+    required BuildContext context,
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required List<Color> gradientColors,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: Ink(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [gradientColors[0].withAlpha(40), gradientColors[1].withAlpha(20)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: gradientColors[1].withAlpha(80)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(colors: gradientColors),
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: gradientColors[1].withAlpha(80),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Icon(icon, color: Colors.white, size: 24),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: gradientColors[1],
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios_rounded, color: AppTheme.textSecondary, size: 16),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -420,9 +476,9 @@ class DashboardScreen extends StatelessWidget {
 
   Widget _buildHowToUse() {
     const steps = [
-      (Icons.camera_alt_rounded, 'ছবি তুলুন', 'ওষুধের পাতা বা প্রেসক্রিপশনের ছবি নিন'),
-      (Icons.auto_awesome_rounded, 'স্বয়ংক্রিয় বিশ্লেষণ', 'সিস্টেম স্বয়ংক্রিয়ভাবে তথ্য বের করে'),
-      (Icons.info_rounded, 'ফলাফল দেখুন', 'ওষুধের বিস্তারিত তথ্য বাংলায় পড়ুন'),
+      (Icons.camera_alt_rounded, 'ছবি তুলুন / স্ক্যান করুন', 'ওষুধের পাতা বা প্রেসক্রিপশনের স্পষ্ট ছবি নিন'),
+      (Icons.search_rounded, 'সার্চ বার ব্যবহার করুন', 'ওষুধের নাম বা জেনেরিক নাম লিখে সরাসরি খুঁজুন'),
+      (Icons.auto_awesome_rounded, 'স্বয়ংক্রিয় বিশ্লেষণ ও অনুবাদ', 'লোকাল ডাটাবেজ বা এআই দিয়ে বিস্তারিত তথ্য বাংলায় দেখুন'),
     ];
 
     return Container(
