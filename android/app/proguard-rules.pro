@@ -22,8 +22,8 @@
 -dontwarn kotlinx.coroutines.**
 -keep class com.tekartik.sqflite.** { *; }
 -dontwarn com.tekartik.sqflite.**
--keep class com.dexterous.flutterlocalnotifications.** { *; }
--dontwarn com.dexterous.flutterlocalnotifications.**
+-keep class com.dexterous.** { *; }
+-dontwarn com.dexterous.**
 -keep class com.google.mlkit.** { *; }
 -dontwarn com.google.mlkit.**
 -keep class com.google.android.gms.** { *; }
