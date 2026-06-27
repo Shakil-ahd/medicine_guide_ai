@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
 import 'package:medicine_guide_ai/core/widgets/custom_snackbar.dart';
@@ -74,8 +73,6 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
     );
     if (picked != null) setState(() => _selectedTime = picked);
   }
-
-  static const _channel = MethodChannel('com.mediscanai.app/battery');
 
   Future<void> _save() async {
     if (_nameController.text.trim().isEmpty) {

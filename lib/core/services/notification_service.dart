@@ -50,7 +50,7 @@ class NotificationService {
           .resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin>();
       final notificationGranted = await androidPlugin?.requestNotificationsPermission();
-      final exactAlarmGranted = await androidPlugin?.requestExactAlarmsPermission();
+      await androidPlugin?.requestExactAlarmsPermission();
       return (notificationGranted ?? false);
     } catch (e) {
       debugPrint('Notification permissions request failed: $e');
