@@ -201,9 +201,9 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
         if (errorMsg.startsWith('Exception: ')) {
           errorMsg = errorMsg.substring(11);
         }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMsg)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(errorMsg)));
       }
     }
   }
@@ -262,7 +262,11 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                 _isBengali ? Icons.language_rounded : Icons.g_translate_rounded,
                 size: 16,
               ),
-              label: Text(_isBengali ? 'ইংরেজিতে দেখুন (English)' : 'বাংলায় অনুবাদ করুন (Translate)'),
+              label: Text(
+                _isBengali
+                    ? 'ইংরেজিতে দেখুন (English)'
+                    : 'বাংলায় অনুবাদ করুন (Translate)',
+              ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppTheme.accentTeal,
                 side: const BorderSide(color: AppTheme.accentTeal),
@@ -313,7 +317,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
 
     final isLong = content.length > 150;
     final isExpanded = _expandedSections.contains(title);
-    
+
     final String displayContent;
     if (isLong && !isExpanded) {
       displayContent = '${content.substring(0, 150)}...';

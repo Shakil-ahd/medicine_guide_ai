@@ -604,6 +604,16 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
                       : () async {
                           await _channel.invokeMethod('requestExactAlarmPermission');
                         },
+                ),
+                _SettingsTileData(
+                  icon: Icons.autorenew_rounded,
+                  iconColor: AppTheme.accentTeal,
+                  title: 'অটো-স্টার্ট অনুমতি (OEM)',
+                  subtitle: 'অ্যাপ বন্ধ করার পরও রিমাইন্ডার সচল রাখতে এটি সচল করুন',
+                  trailing: 'চালু করুন',
+                  onTap: () async {
+                    await _channel.invokeMethod('openAutostartSettings');
+                  },
                   isLast: true,
                 ),
               ]),
