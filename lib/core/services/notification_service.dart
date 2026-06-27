@@ -42,15 +42,30 @@ class NotificationService {
     } catch (e) {
       debugPrint('Notification initialization failed: $e');
     }
+  }
 
+  Future<bool> requestPermissions() async {
     try {
       final androidPlugin = _notifications
           .resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin>();
-      await androidPlugin?.requestNotificationsPermission();
-      await androidPlugin?.requestExactAlarmsPermission();
+      final notificationGranted = await androidPlugin?.requestNotificationsPermission();
+      final exactAlarmGranted = await androidPlugin?.requestExactAlarmsPermission();
+      return (notificationGranted ?? false);
     } catch (e) {
       debugPrint('Notification permissions request failed: $e');
+      return false;
+    }
+  }
+
+  Future<bool> areNotificationsEnabled() async {
+    try {
+      final androidPlugin = _notifications
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+      return await androidPlugin?.areNotificationsEnabled() ?? false;
+    } catch (_) {
+      return false;
     }
   }
 
