@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
 import 'package:medicine_guide_ai/core/widgets/custom_snackbar.dart';
+import 'package:medicine_guide_ai/core/services/notification_service.dart';
 import 'package:medicine_guide_ai/features/reminder/domain/entities/reminder.dart';
 import 'package:medicine_guide_ai/features/reminder/presentation/bloc/reminder_bloc.dart';
 import 'package:medicine_guide_ai/features/reminder/presentation/bloc/reminder_event.dart';
@@ -86,126 +87,15 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
       return;
     }
 
-    // Check battery optimization status on Android
+    // Request standard notification permission
     try {
-      final bool isIgnoring = await _channel.invokeMethod('isIgnoringBatteryOptimizations');
-      if (!isIgnoring && mounted) {
-        final bool? proceed = await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            backgroundColor: AppTheme.cardBg,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: BorderSide(color: AppTheme.accentTeal.withAlpha(40)),
-            ),
-            title: const Row(
-              children: [
-                Icon(Icons.battery_alert_rounded, color: AppTheme.accentTeal),
-                SizedBox(width: 10),
-                Text(
-                  'ব্যাটারি অপ্টিমাইজেশন',
-                  style: TextStyle(
-                    color: AppTheme.textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            content: const Text(
-              'সঠিক সময়ে ওষুধের রিমাইন্ডার নোটিফিকেশন পেতে অ্যাপটির ব্যাকগ্রাউন্ড ব্যাটারি অপ্টিমাইজেশন বন্ধ করা প্রয়োজন। আপনি কি এটি ঠিক করতে চান?',
-              style: TextStyle(color: AppTheme.textSecondary, height: 1.5, fontSize: 13),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text(
-                  'পরে করব',
-                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.accentTeal,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: const Text('ঠিক করুন', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-              ),
-            ],
-          ),
-        );
-
-        if (proceed == true && mounted) {
-          await _channel.invokeMethod('requestIgnoreBatteryOptimizations');
-        }
+      final bool notificationGranted = await NotificationService.instance.requestPermissions();
+      if (!notificationGranted && mounted) {
+        CustomSnackBar.showError(context, 'রিমাইন্ডার কাজ করার জন্য নোটিফিকেশন পারমিশন প্রয়োজন। অনুগ্রহ করে নোটিফিকেশন চালু করুন।');
+        return;
       }
-    } catch (_) {
-      // Ignore errors on non-Android platforms
-    }
-
-    // Check exact alarm permission status on Android
-    try {
-      final bool canSchedule = await _channel.invokeMethod('canScheduleExactAlarms');
-      if (!canSchedule && mounted) {
-        final bool? proceed = await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            backgroundColor: AppTheme.cardBg,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: BorderSide(color: AppTheme.accentTeal.withAlpha(40)),
-            ),
-            title: const Row(
-              children: [
-                Icon(Icons.alarm_on_rounded, color: AppTheme.accentTeal),
-                SizedBox(width: 10),
-                Text(
-                  'অ্যালার্ম ও রিমাইন্ডার',
-                  style: TextStyle(
-                    color: AppTheme.textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            content: const Text(
-              'সঠিক সময়ে ওষুধের অ্যালার্ম বাজাতে অ্যাপটির জন্য "অ্যালার্ম ও রিমাইন্ডার" (Alarms & Reminders) পারমিশন প্রয়োজন। আপনি কি এটি চালু করতে চান?',
-              style: TextStyle(color: AppTheme.textSecondary, height: 1.5, fontSize: 13),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text(
-                  'পরে করব',
-                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.accentTeal,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: const Text('চালু করুন', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-              ),
-            ],
-          ),
-        );
-
-        if (proceed == true && mounted) {
-          await _channel.invokeMethod('requestExactAlarmPermission');
-        }
-      }
-    } catch (_) {
-      // Ignore errors on non-Android platforms
+    } catch (e) {
+      debugPrint('Notification permission check failed: $e');
     }
 
     final reminder = Reminder(
