@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:medicine_guide_ai/core/constants/constants.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
-import 'package:medicine_guide_ai/core/services/notification_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -15,7 +14,6 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
   static const _channel = MethodChannel('com.mediscanai.app/battery');
   bool _isIgnoringBattery = true;
   bool _canScheduleExactAlarms = true;
-  bool _notificationsEnabled = true;
 
   @override
   void initState() {
@@ -41,12 +39,10 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     try {
       final ignoring = await _channel.invokeMethod<bool>('isIgnoringBatteryOptimizations') ?? true;
       final canSchedule = await _channel.invokeMethod<bool>('canScheduleExactAlarms') ?? true;
-      final notifications = await NotificationService.instance.areNotificationsEnabled();
       if (mounted) {
         setState(() {
           _isIgnoringBattery = ignoring;
           _canScheduleExactAlarms = canSchedule;
-          _notificationsEnabled = notifications;
         });
       }
     } catch (_) {}
@@ -584,20 +580,6 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
             sliver: SliverToBoxAdapter(
               child: _buildSettingsGroup([
                 _SettingsTileData(
-                  icon: Icons.notifications_active_rounded,
-                  iconColor: _notificationsEnabled ? AppTheme.accentTeal : AppTheme.warningRed,
-                  title: 'নোটিফিকেশন অনুমতি',
-                  subtitle: _notificationsEnabled ? 'অনুমোদিত (রিমাইন্ডার নোটিফিকেশন সচল)' : 'বন্ধ (নোটিফিকেশন দেখানো যাবে না)',
-                  trailing: _notificationsEnabled ? 'সচল' : 'চালু করুন',
-                  trailingIsLabel: _notificationsEnabled,
-                  onTap: _notificationsEnabled
-                      ? () {}
-                      : () async {
-                          await NotificationService.instance.requestPermissions();
-                          _checkPermissions();
-                        },
-                ),
-                _SettingsTileData(
                   icon: Icons.battery_saver_rounded,
                   iconColor: _isIgnoringBattery ? AppTheme.accentTeal : AppTheme.warningRed,
                   title: 'ব্যাকগ্রাউন্ড ব্যাটারি সচলতা',
@@ -608,7 +590,6 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
                       ? () {}
                       : () async {
                           await _channel.invokeMethod('requestIgnoreBatteryOptimizations');
-                          _checkPermissions();
                         },
                 ),
                 _SettingsTileData(
@@ -622,18 +603,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
                       ? () {}
                       : () async {
                           await _channel.invokeMethod('requestExactAlarmPermission');
-                          _checkPermissions();
                         },
-                ),
-                _SettingsTileData(
-                  icon: Icons.autorenew_rounded,
-                  iconColor: AppTheme.accentTeal,
-                  title: 'অটো-স্টার্ট অনুমতি (OEM)',
-                  subtitle: 'অ্যাপ বন্ধ করার পরও রিমাইন্ডার সচল রাখতে এটি সচল করুন',
-                  trailing: 'চালু করুন',
-                  onTap: () async {
-                    await _channel.invokeMethod('openAutostartSettings');
-                  },
                   isLast: true,
                 ),
               ]),

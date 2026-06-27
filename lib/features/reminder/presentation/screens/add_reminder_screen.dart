@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
 import 'package:medicine_guide_ai/core/widgets/custom_snackbar.dart';
-import 'package:medicine_guide_ai/core/services/notification_service.dart';
 import 'package:medicine_guide_ai/features/reminder/domain/entities/reminder.dart';
 import 'package:medicine_guide_ai/features/reminder/presentation/bloc/reminder_bloc.dart';
 import 'package:medicine_guide_ai/features/reminder/presentation/bloc/reminder_event.dart';
@@ -85,17 +84,6 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
     if (_selectedDays.isEmpty) {
       CustomSnackBar.showError(context, 'কমপক্ষে একটি দিন নির্বাচন করুন');
       return;
-    }
-
-    // Request standard notification permission
-    try {
-      final bool notificationGranted = await NotificationService.instance.requestPermissions();
-      if (!notificationGranted && mounted) {
-        CustomSnackBar.showError(context, 'রিমাইন্ডার কাজ করার জন্য নোটিফিকেশন পারমিশন প্রয়োজন। অনুগ্রহ করে নোটিফিকেশন চালু করুন।');
-        return;
-      }
-    } catch (e) {
-      debugPrint('Notification permission check failed: $e');
     }
 
     // Check battery optimization status on Android
