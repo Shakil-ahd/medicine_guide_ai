@@ -1,4 +1,5 @@
 {
+  "java.import.gradle.java.home": "C:/Program Files/Android/Android Studio/jbr",
   "java.configuration.updateBuildConfiguration": "interactive",
   "java.project.excludePaths": [
     "**/build",

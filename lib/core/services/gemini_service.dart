@@ -8,20 +8,32 @@ import 'package:translator/translator.dart';
 
 class GeminiService {
   static const List<String> _models = [
+    'gemini-3.5-flash',
+    'gemini-flash-latest',
     'gemini-2.5-flash',
     'gemini-2.0-flash',
-    'gemini-1.5-flash',
+    'gemini-3.1-flash-lite',
+    'gemini-2.5-flash-lite',
+    'gemini-2.0-flash-lite',
+    'gemini-3-flash-preview',
   ];
 
-  static const Duration _timeout = Duration(seconds: 12);
+  static const Duration _timeout = Duration(seconds: 30);
 
   int _currentKeyIndex = 0;
 
   List<String> get _keys {
-    if (Secrets.geminiApiKeys.isNotEmpty) {
-      return Secrets.geminiApiKeys;
+    final list = <String>[];
+    if (Secrets.geminiApiKey.trim().isNotEmpty) {
+      list.add(Secrets.geminiApiKey.trim());
     }
-    return [Secrets.geminiApiKey];
+    for (final k in Secrets.geminiApiKeys) {
+      final trimmed = k.trim();
+      if (trimmed.isNotEmpty && !list.contains(trimmed)) {
+        list.add(trimmed);
+      }
+    }
+    return list;
   }
 
   String get _currentKey {
@@ -159,7 +171,7 @@ class GeminiService {
 
       try {
         final model = GenerativeModel(
-          model: 'gemini-2.5-flash',
+          model: 'gemini-3.5-flash',
           apiKey: key,
           generationConfig: GenerationConfig(
             maxOutputTokens: 2,
@@ -168,7 +180,7 @@ class GeminiService {
         );
         final response = await model
             .generateContent([Content.text('respond with OK')])
-            .timeout(const Duration(seconds: 4));
+            .timeout(const Duration(seconds: 10));
 
         if (response.text != null && response.text!.trim().isNotEmpty) {
           _lastKnownStatus[i] = 'working';
@@ -240,14 +252,17 @@ class GeminiService {
         '1. Medicine name MUST exactly match what is printed on the pack.\n'
         '2. Price MUST be the current official retail price (MRP) in Bangladesh Taka. Use your training data for accurate prices. Never guess or approximate.\n'
         '3. If price is unknown, write "মূল্য অজানা" instead of guessing.\n'
-        '4. Alternatives must be real brands available in Bangladesh pharmacies.';
+        '4. Alternatives must be real brands available in Bangladesh pharmacies.\n'
+        '5. The OCR extracted text is provided only as secondary helper context. The primary source of truth is the visual image. Look at the package visually, read the brand name, dosage strength (e.g. 20mg, 500mg), form (tablet, capsule, syrup), and company name directly from the image. If the OCR text is messy or incorrect, ignore it and rely entirely on your vision capability to identify the medicine.';
 
     final mimeType = _getMimeType(imagePath);
     final bytes = await File(imagePath).readAsBytes();
     final keys = _keys;
     final totalKeys = keys.length;
 
-    _checkKeysAvailability();
+    if (Secrets.openRouterApiKey.trim().isEmpty) {
+      _checkKeysAvailability();
+    }
 
     for (int keyIndex = 0; keyIndex < totalKeys; keyIndex++) {
       final key = keys[keyIndex];
@@ -323,13 +338,9 @@ class GeminiService {
           }
           if (_isQuotaError(e)) {
             debugPrint(
-              '[GeminiService] Quota hit on model $modelName with key $keyIndex. Rotating key immediately.',
+              '[GeminiService] Quota hit on model $modelName with key $keyIndex. Trying next model.',
             );
-            _lastKnownStatus[keyIndex] = 'rateLimited';
-            _rateLimitExpiry[keyIndex] = DateTime.now().add(
-              const Duration(minutes: 5),
-            );
-            break; // Break model loop to rotate key immediately
+            continue; // Try other models first
           }
           if (_isServerBusyError(e)) {
             debugPrint('[GeminiService] Server busy, waiting 2s...');
@@ -349,6 +360,14 @@ class GeminiService {
     }
 
     debugPrint('[GeminiService] All keys and models completely exhausted.');
+
+    if (Secrets.openRouterApiKey.trim().isNotEmpty) {
+      final fallbackData = await _callOpenRouterFallback(imagePath, prompt, false);
+      if (fallbackData != null) {
+        return fallbackData;
+      }
+    }
+
     _checkKeysAvailability();
     throw Exception(
       'ওষুধের তথ্য সংগ্রহ করা যায়নি। অনুগ্রহ করে স্পষ্ট ছবি আপলোড করুন।',
@@ -376,14 +395,17 @@ class GeminiService {
         '1. Translate the dose instructions VERY carefully into the strict hyphen-separated numeric pattern format (e.g. 1-0-1, 1-1-1, 1-0-0, 0-0-1).\n'
         '2. Price must be actual current MRP in Bangladesh. Write "মূল্য অজানা" if uncertain.\n'
         '3. Do NOT invent medicines not written in the prescription.\n'
-        '4. Alternatives must be real brands in Bangladesh pharmacies.';
+        '4. Alternatives must be real brands in Bangladesh pharmacies.\n'
+        '5. HANDWRITING READABILITY: Be extremely careful when reading handwritten numbers. In prescriptions, doctors often write a simple vertical stroke ("|") or slash ("/") to represent "1". Do NOT confuse this for "2". If it is written as a single line, it is 1, not 2. Look at typical patterns (e.g. 1-0-1, 1-0-0, 1-1-1). Double check "1" vs "2" visually.';
 
     final mimeType = _getMimeType(imagePath);
     final bytes = await File(imagePath).readAsBytes();
     final keys = _keys;
     final totalKeys = keys.length;
 
-    _checkKeysAvailability();
+    if (Secrets.openRouterApiKey.trim().isEmpty) {
+      _checkKeysAvailability();
+    }
 
     for (int keyIndex = 0; keyIndex < totalKeys; keyIndex++) {
       final key = keys[keyIndex];
@@ -459,13 +481,9 @@ class GeminiService {
           }
           if (_isQuotaError(e)) {
             debugPrint(
-              '[GeminiService] Quota hit on model $modelName with key $keyIndex. Rotating key immediately.',
+              '[GeminiService] Quota hit on model $modelName with key $keyIndex. Trying next model.',
             );
-            _lastKnownStatus[keyIndex] = 'rateLimited';
-            _rateLimitExpiry[keyIndex] = DateTime.now().add(
-              const Duration(minutes: 5),
-            );
-            break; // Break model loop to rotate key immediately
+            continue; // Try other models first
           }
           if (_isServerBusyError(e)) {
             debugPrint('[GeminiService] Server busy, waiting 2s...');
@@ -482,6 +500,13 @@ class GeminiService {
       debugPrint(
         '[GeminiService] All models exhausted or key failed for Key Index: $keyIndex. Rotating to next key...',
       );
+    }
+
+    if (Secrets.openRouterApiKey.trim().isNotEmpty) {
+      final fallbackData = await _callOpenRouterFallback(imagePath, prompt, true);
+      if (fallbackData != null) {
+        return fallbackData;
+      }
     }
 
     _checkKeysAvailability();
@@ -532,5 +557,99 @@ class GeminiService {
       debugPrint('[Translator] Parallel translation error: $e');
       throw Exception('অনুবাদ করা সম্ভব হয়নি। অনুগ্রহ করে ইন্টারনেট সংযোগ চেক করুন।');
     }
+  }
+
+  Future<dynamic> _callOpenRouterFallback(
+    String imagePath,
+    String prompt,
+    bool isList,
+  ) async {
+    if (Secrets.openRouterApiKey.trim().isEmpty) {
+      return null;
+    }
+
+    debugPrint('[GeminiService] Calling OpenRouter Fallback...');
+    try {
+      final bytes = await File(imagePath).readAsBytes();
+      final base64Image = base64Encode(bytes);
+      final mimeType = _getMimeType(imagePath);
+
+      final client = HttpClient();
+      final uri = Uri.parse('https://openrouter.ai/api/v1/chat/completions');
+
+      // We use openrouter/free to dynamically select available free vision models, with specific fallbacks
+      final models = [
+        'openrouter/free',
+        'nvidia/nemotron-nano-12b-v2-vl:free',
+        'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+      ];
+
+      for (final modelName in models) {
+        try {
+          debugPrint('[GeminiService] Trying OpenRouter model=$modelName');
+          final request = await client.postUrl(uri).timeout(const Duration(seconds: 25));
+
+          request.headers.set('Content-Type', 'application/json');
+          request.headers.set('Authorization', 'Bearer ${Secrets.openRouterApiKey.trim()}');
+          request.headers.set('HTTP-Referer', 'https://github.com/Shakil-ahd/medicine_guide_ai');
+          request.headers.set('X-Title', 'MediScan AI');
+
+          final requestBody = jsonEncode({
+            'model': modelName,
+            'messages': [
+              {
+                'role': 'user',
+                'content': [
+                  {
+                    'type': 'text',
+                    'text': prompt,
+                  },
+                  {
+                    'type': 'image_url',
+                    'image_url': {
+                      'url': 'data:$mimeType;base64,$base64Image',
+                    },
+                  },
+                ],
+              }
+            ],
+            'temperature': 0.1,
+          });
+
+          request.add(utf8.encode(requestBody));
+          final response = await request.close().timeout(const Duration(seconds: 25));
+          final responseBody = await response.transform(utf8.decoder).join();
+
+          if (response.statusCode == 200) {
+            final decodedResponse = jsonDecode(responseBody) as Map<String, dynamic>;
+            final choices = decodedResponse['choices'] as List?;
+            if (choices != null && choices.isNotEmpty) {
+              final content = choices[0]['message']['content'] as String?;
+              if (content != null && content.trim().isNotEmpty) {
+                final cleaned = _cleanJson(content);
+                final decodedContent = jsonDecode(cleaned);
+                if (isList && decodedContent is List) {
+                  debugPrint('[GeminiService] ✓ OpenRouter Fallback success (List) via $modelName');
+                  client.close();
+                  return decodedContent;
+                } else if (!isList && decodedContent is Map<String, dynamic>) {
+                  debugPrint('[GeminiService] ✓ OpenRouter Fallback success (Map) via $modelName');
+                  client.close();
+                  return decodedContent;
+                }
+              }
+            }
+          } else {
+            debugPrint('[GeminiService] OpenRouter model $modelName returned error: ${response.statusCode} - $responseBody');
+          }
+        } catch (e) {
+          debugPrint('[GeminiService] Error calling OpenRouter model $modelName: $e');
+        }
+      }
+      client.close();
+    } catch (e) {
+      debugPrint('[GeminiService] Exception in OpenRouter Fallback structure: $e');
+    }
+    return null;
   }
 }
