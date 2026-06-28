@@ -9,4 +9,5 @@ class AppConstants {
   static const String modelsUrl = "https://generativelanguage.googleapis.com/v1beta/models";
   static const String openRouterApiUrl = "https://openrouter.ai/api/v1/chat/completions";
   static const String openRouterReferer = "https://github.com/Shakil-ahd/medicine_guide_ai";
+  static const String groqApiUrl = "https://api.groq.com/openai/v1/chat/completions";
 }

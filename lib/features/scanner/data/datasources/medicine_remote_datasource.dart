@@ -1,4 +1,4 @@
-﻿import 'package:medicine_guide_ai/core/services/gemini_service.dart';
+import 'package:medicine_guide_ai/core/services/ai_scanner_service.dart';
 import 'package:medicine_guide_ai/features/scanner/data/models/medicine_model.dart';
 
 abstract class MedicineRemoteDataSource {
@@ -6,13 +6,13 @@ abstract class MedicineRemoteDataSource {
 }
 
 class MedicineRemoteDataSourceImpl implements MedicineRemoteDataSource {
-  final GeminiService _geminiService;
+  final AiScannerService _aiScannerService;
 
-  MedicineRemoteDataSourceImpl(this._geminiService);
+  MedicineRemoteDataSourceImpl(this._aiScannerService);
 
   @override
   Future<MedicineModel?> fetchMedicineDetails(String imagePath, String scannedText) async {
-    final data = await _geminiService.fetchMedicineDetails(imagePath, scannedText);
+    final data = await _aiScannerService.fetchMedicineDetails(imagePath, scannedText);
     if (data != null) {
       return MedicineModel.fromJson(data);
     }

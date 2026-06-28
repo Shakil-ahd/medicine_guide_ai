@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:medicine_guide_ai/core/services/gemini_service.dart';
+import 'package:medicine_guide_ai/core/services/ai_scanner_service.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
 import 'package:medicine_guide_ai/core/widgets/scanner_loader.dart';
 import 'package:medicine_guide_ai/features/prescription/presentation/bloc/prescription_bloc.dart';
@@ -101,7 +101,7 @@ class _PrescriptionScanScreenState extends State<PrescriptionScanScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => PrescriptionBloc(GeminiService()),
+      create: (_) => PrescriptionBloc(AiScannerService()),
       child: BlocListener<PrescriptionBloc, PrescriptionState>(
         listener: (context, state) {
           if (state is PrescriptionLoading) {

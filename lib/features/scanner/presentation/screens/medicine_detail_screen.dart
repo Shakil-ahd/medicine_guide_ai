@@ -4,7 +4,7 @@ import 'package:medicine_guide_ai/features/scanner/domain/entities/medicine.dart
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:medicine_guide_ai/core/services/database_helper.dart';
 import 'package:medicine_guide_ai/features/scanner/data/models/medicine_model.dart';
-import 'package:medicine_guide_ai/core/services/gemini_service.dart';
+import 'package:medicine_guide_ai/core/services/ai_scanner_service.dart';
 
 class MedicineDetailScreen extends StatefulWidget {
   final Medicine medicine;
@@ -166,8 +166,8 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
     );
 
     try {
-      final geminiService = GeminiService();
-      final translated = await geminiService.translateMedicineDetails(
+      final aiScannerService = AiScannerService();
+      final translated = await aiScannerService.translateMedicineDetails(
         name: medicine.name,
         genericName: medicine.genericName,
         indications: _indications,

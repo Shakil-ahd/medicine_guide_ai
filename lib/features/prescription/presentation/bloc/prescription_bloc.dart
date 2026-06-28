@@ -1,16 +1,16 @@
 import 'dart:convert';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medicine_guide_ai/core/services/database_helper.dart';
-import 'package:medicine_guide_ai/core/services/gemini_service.dart';
+import 'package:medicine_guide_ai/core/services/ai_scanner_service.dart';
 import 'package:medicine_guide_ai/features/prescription/domain/entities/prescription_medicine.dart';
 import 'package:medicine_guide_ai/features/prescription/presentation/bloc/prescription_event.dart';
 import 'package:medicine_guide_ai/features/prescription/presentation/bloc/prescription_state.dart';
 
 class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
-  final GeminiService _geminiService;
+  final AiScannerService _aiScannerService;
   bool _isCancelled = false;
 
-  PrescriptionBloc(this._geminiService) : super(PrescriptionInitial()) {
+  PrescriptionBloc(this._aiScannerService) : super(PrescriptionInitial()) {
     on<PrescriptionScanRequested>(_onScanRequested);
     on<PrescriptionScanCancelRequested>(_onCancelRequested);
   }
@@ -30,7 +30,7 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
     _isCancelled = false;
     emit(PrescriptionLoading());
     try {
-      final result = await _geminiService.parsePrescription(event.imagePath);
+      final result = await _aiScannerService.parsePrescription(event.imagePath);
       if (_isCancelled) return;
 
       if (result == null || result.isEmpty) {

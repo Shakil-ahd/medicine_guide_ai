@@ -7,7 +7,7 @@ import 'package:medicine_guide_ai/features/scanner/presentation/bloc/medicine_bl
 import 'package:medicine_guide_ai/features/scanner/domain/entities/medicine.dart';
 import 'package:medicine_guide_ai/core/widgets/scanner_loader.dart';
 import 'package:medicine_guide_ai/core/services/database_helper.dart';
-import 'package:medicine_guide_ai/core/services/gemini_service.dart';
+import 'package:medicine_guide_ai/core/services/ai_scanner_service.dart';
 import 'package:medicine_guide_ai/features/scanner/data/models/medicine_model.dart';
 import 'package:medicine_guide_ai/features/scanner/presentation/screens/medicine_detail_screen.dart';
 
@@ -68,8 +68,8 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
     );
 
     try {
-      final geminiService = GeminiService();
-      final translated = await geminiService.translateMedicineDetails(
+      final aiScannerService = AiScannerService();
+      final translated = await aiScannerService.translateMedicineDetails(
         name: medicine.name,
         genericName: medicine.genericName,
         indications: _indications,

@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:medicine_guide_ai/core/constants/constants.dart';
 import 'package:medicine_guide_ai/core/services/database_helper.dart';
-import 'package:medicine_guide_ai/core/services/gemini_service.dart';
+import 'package:medicine_guide_ai/core/services/ai_scanner_service.dart';
 import 'package:medicine_guide_ai/core/services/notification_service.dart';
 import 'package:medicine_guide_ai/core/services/ocr_service.dart';
 import 'package:medicine_guide_ai/core/services/tts_service.dart';
@@ -624,7 +624,7 @@ class DashboardScreen extends StatelessWidget {
                     repository: MedicineRepositoryImpl(
                       ocrService: OcrService(),
                       localDataSource: MedicineLocalDataSourceImpl(DatabaseHelper.instance),
-                      remoteDataSource: MedicineRemoteDataSourceImpl(GeminiService()),
+                      remoteDataSource: MedicineRemoteDataSourceImpl(AiScannerService()),
                     ),
                     ttsService: TtsService(),
                   ),
