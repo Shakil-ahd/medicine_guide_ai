@@ -431,7 +431,6 @@ class _PrescriptionScanScreenState extends State<PrescriptionScanScreen> {
     final picker = ImagePicker();
     final image = await picker.pickImage(
       source: source,
-      imageQuality: 95,
     );
     if (image != null) {
       setState(() => _selectedImagePath = image.path);

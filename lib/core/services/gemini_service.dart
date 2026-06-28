@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:medicine_guide_ai/core/config/secrets.dart';
+import 'package:medicine_guide_ai/core/constants/constants.dart';
 import 'package:translator/translator.dart';
 
 class GeminiService {
@@ -133,9 +134,7 @@ class GeminiService {
     }
 
     if (invalidCount == total) {
-      throw Exception(
-        'আপনার এপিআই কি (API Key) সঠিক নয়। অনুগ্রহ করে কোডের secrets.dart ফাইলে সঠিক API Key সেট করুন।',
-      );
+      throw Exception('আপনার এপিআই কি (API Key) সঠিক নয়।');
     }
     if (rateLimitCount == total) {
       throw Exception(
@@ -362,7 +361,11 @@ class GeminiService {
     debugPrint('[GeminiService] All keys and models completely exhausted.');
 
     if (Secrets.openRouterApiKey.trim().isNotEmpty) {
-      final fallbackData = await _callOpenRouterFallback(imagePath, prompt, false);
+      final fallbackData = await _callOpenRouterFallback(
+        imagePath,
+        prompt,
+        false,
+      );
       if (fallbackData != null) {
         return fallbackData;
       }
@@ -503,7 +506,11 @@ class GeminiService {
     }
 
     if (Secrets.openRouterApiKey.trim().isNotEmpty) {
-      final fallbackData = await _callOpenRouterFallback(imagePath, prompt, true);
+      final fallbackData = await _callOpenRouterFallback(
+        imagePath,
+        prompt,
+        true,
+      );
       if (fallbackData != null) {
         return fallbackData;
       }
@@ -555,7 +562,9 @@ class GeminiService {
       };
     } catch (e) {
       debugPrint('[Translator] Parallel translation error: $e');
-      throw Exception('অনুবাদ করা সম্ভব হয়নি। অনুগ্রহ করে ইন্টারনেট সংযোগ চেক করুন।');
+      throw Exception(
+        'অনুবাদ করা সম্ভব হয়নি। অনুগ্রহ করে ইন্টারনেট সংযোগ চেক করুন।',
+      );
     }
   }
 
@@ -575,7 +584,7 @@ class GeminiService {
       final mimeType = _getMimeType(imagePath);
 
       final client = HttpClient();
-      final uri = Uri.parse('https://openrouter.ai/api/v1/chat/completions');
+      final uri = Uri.parse(AppConstants.openRouterApiUrl);
 
       // We use openrouter/free to dynamically select available free vision models, with specific fallbacks
       final models = [
@@ -587,12 +596,17 @@ class GeminiService {
       for (final modelName in models) {
         try {
           debugPrint('[GeminiService] Trying OpenRouter model=$modelName');
-          final request = await client.postUrl(uri).timeout(const Duration(seconds: 25));
+          final request = await client
+              .postUrl(uri)
+              .timeout(const Duration(seconds: 25));
 
           request.headers.set('Content-Type', 'application/json');
-          request.headers.set('Authorization', 'Bearer ${Secrets.openRouterApiKey.trim()}');
-          request.headers.set('HTTP-Referer', 'https://github.com/Shakil-ahd/medicine_guide_ai');
-          request.headers.set('X-Title', 'MediScan AI');
+          request.headers.set(
+            'Authorization',
+            'Bearer ${Secrets.openRouterApiKey.trim()}',
+          );
+          request.headers.set('HTTP-Referer', AppConstants.openRouterReferer);
+          request.headers.set('X-Title', AppConstants.appName);
 
           final requestBody = jsonEncode({
             'model': modelName,
@@ -600,28 +614,26 @@ class GeminiService {
               {
                 'role': 'user',
                 'content': [
-                  {
-                    'type': 'text',
-                    'text': prompt,
-                  },
+                  {'type': 'text', 'text': prompt},
                   {
                     'type': 'image_url',
-                    'image_url': {
-                      'url': 'data:$mimeType;base64,$base64Image',
-                    },
+                    'image_url': {'url': 'data:$mimeType;base64,$base64Image'},
                   },
                 ],
-              }
+              },
             ],
             'temperature': 0.1,
           });
 
           request.add(utf8.encode(requestBody));
-          final response = await request.close().timeout(const Duration(seconds: 25));
+          final response = await request.close().timeout(
+            const Duration(seconds: 25),
+          );
           final responseBody = await response.transform(utf8.decoder).join();
 
           if (response.statusCode == 200) {
-            final decodedResponse = jsonDecode(responseBody) as Map<String, dynamic>;
+            final decodedResponse =
+                jsonDecode(responseBody) as Map<String, dynamic>;
             final choices = decodedResponse['choices'] as List?;
             if (choices != null && choices.isNotEmpty) {
               final content = choices[0]['message']['content'] as String?;
@@ -629,26 +641,36 @@ class GeminiService {
                 final cleaned = _cleanJson(content);
                 final decodedContent = jsonDecode(cleaned);
                 if (isList && decodedContent is List) {
-                  debugPrint('[GeminiService] ✓ OpenRouter Fallback success (List) via $modelName');
+                  debugPrint(
+                    '[GeminiService] ✓ OpenRouter Fallback success (List) via $modelName',
+                  );
                   client.close();
                   return decodedContent;
                 } else if (!isList && decodedContent is Map<String, dynamic>) {
-                  debugPrint('[GeminiService] ✓ OpenRouter Fallback success (Map) via $modelName');
+                  debugPrint(
+                    '[GeminiService] ✓ OpenRouter Fallback success (Map) via $modelName',
+                  );
                   client.close();
                   return decodedContent;
                 }
               }
             }
           } else {
-            debugPrint('[GeminiService] OpenRouter model $modelName returned error: ${response.statusCode} - $responseBody');
+            debugPrint(
+              '[GeminiService] OpenRouter model $modelName returned error: ${response.statusCode} - $responseBody',
+            );
           }
         } catch (e) {
-          debugPrint('[GeminiService] Error calling OpenRouter model $modelName: $e');
+          debugPrint(
+            '[GeminiService] Error calling OpenRouter model $modelName: $e',
+          );
         }
       }
       client.close();
     } catch (e) {
-      debugPrint('[GeminiService] Exception in OpenRouter Fallback structure: $e');
+      debugPrint(
+        '[GeminiService] Exception in OpenRouter Fallback structure: $e',
+      );
     }
     return null;
   }

@@ -612,7 +612,6 @@ class DashboardScreen extends StatelessWidget {
           final picker = ImagePicker();
           final image = await picker.pickImage(
             source: source,
-            imageQuality: 95,
           );
           if (image != null && context.mounted) {
             Navigator.push(
