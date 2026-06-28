@@ -75,10 +75,7 @@ class ReminderRepositoryImpl implements ReminderRepository {
   @override
   Future<void> toggleReminder(int id, bool isActive) async {
     final rows = await _db.getReminders();
-    final row = rows.firstWhere(
-      (r) => r['id'] == id,
-      orElse: () => {},
-    );
+    final row = rows.firstWhere((r) => r['id'] == id, orElse: () => {});
     if (row.isEmpty) return;
 
     final model = ReminderModel.fromMap(row);
@@ -112,7 +109,7 @@ class ReminderRepositoryImpl implements ReminderRepository {
     _notifications
         .scheduleWeeklyNotification(
           reminderId: id,
-          title: '💊 ওষুধ খাওয়ার সময়!',
+          title: '💊 ওষুধ খাওয়ার সময় হয়েছে,\n এখনই খেয়ে নিন!',
           body: doseDescription.isNotEmpty
               ? '$medicineName — $doseDescription'
               : medicineName,
@@ -120,8 +117,6 @@ class ReminderRepositoryImpl implements ReminderRepository {
           minute: minute,
           daysOfWeek: daysOfWeek,
         )
-        .catchError(
-          (e) => debugPrint('Notification schedule failed: $e'),
-        );
+        .catchError((e) => debugPrint('Notification schedule failed: $e'));
   }
 }
