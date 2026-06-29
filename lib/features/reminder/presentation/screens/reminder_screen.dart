@@ -28,9 +28,7 @@ class ReminderScreen extends StatelessWidget {
       body: BlocBuilder<ReminderBloc, ReminderState>(
         builder: (context, state) {
           if (state is ReminderLoading) {
-            return const Center(
-              child: ScannerLoader(size: 100),
-            );
+            return const Center(child: ScannerLoader(size: 100));
           }
           if (state is ReminderError) {
             return Center(
@@ -67,7 +65,11 @@ class ReminderScreen extends StatelessWidget {
           icon: const Icon(Icons.alarm_add_rounded, color: Colors.white),
           label: const Text(
             'নতুন রিমাইন্ডার',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -135,7 +137,7 @@ class ReminderScreen extends StatelessWidget {
     final inactive = reminders.where((r) => !r.isActive).toList();
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
       children: [
         if (active.isNotEmpty) ...[
           _buildSectionHeader('সক্রিয় রিমাইন্ডার', active.length),

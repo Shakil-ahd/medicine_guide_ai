@@ -1,3 +1,4 @@
+import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -136,16 +137,19 @@ class DashboardScreen extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(24),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(context, 0, currentIndex, Icons.home_rounded, 'হোম'),
-              _buildNavItem(context, 1, currentIndex, Icons.alarm_rounded, 'রিমাইন্ডার'),
-              _buildNavItem(context, 2, currentIndex, Icons.history_edu_rounded, 'হিস্ট্রি'),
-              _buildNavItem(context, 3, currentIndex, Icons.settings_rounded, 'সেটিংস'),
-            ],
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItem(context, 0, currentIndex, Icons.home_rounded, 'হোম'),
+                _buildNavItem(context, 1, currentIndex, Icons.alarm_rounded, 'রিমাইন্ডার'),
+                _buildNavItem(context, 2, currentIndex, Icons.history_edu_rounded, 'হিস্ট্রি'),
+                _buildNavItem(context, 3, currentIndex, Icons.settings_rounded, 'সেটিংস'),
+              ],
+            ),
           ),
         ),
       ),

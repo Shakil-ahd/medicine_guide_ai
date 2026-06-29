@@ -215,7 +215,10 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
       decoration: BoxDecoration(
         color: AppTheme.cardBg,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppTheme.accentTeal.withAlpha(80), width: 1.5),
+        border: Border.all(
+          color: AppTheme.accentTeal.withAlpha(80),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
             color: AppTheme.accentTeal.withAlpha(15),
@@ -240,7 +243,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
           Text(
             medicine.genericName,
             style: const TextStyle(
-              fontSize: 16, 
+              fontSize: 16,
               color: AppTheme.textPrimary,
               fontWeight: FontWeight.w600,
             ),
@@ -279,7 +282,10 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                 _isBengali
                     ? 'ইংরেজিতে দেখুন (English)'
                     : 'বাংলায় অনুবাদ করুন (Translate)',
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppTheme.accentTeal,
@@ -301,12 +307,17 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
       height: 52,
       decoration: BoxDecoration(
         gradient: _isPlaying
-            ? const LinearGradient(colors: [AppTheme.warningRed, Color(0xFFEF4444)])
-            : const LinearGradient(colors: [AppTheme.accentIndigo, Color(0xFF4F46E5)]),
+            ? const LinearGradient(
+                colors: [AppTheme.warningRed, Color(0xFFEF4444)],
+              )
+            : const LinearGradient(
+                colors: [AppTheme.accentIndigo, Color(0xFF4F46E5)],
+              ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: (_isPlaying ? AppTheme.warningRed : AppTheme.accentIndigo).withAlpha(60),
+            color: (_isPlaying ? AppTheme.warningRed : AppTheme.accentIndigo)
+                .withAlpha(60),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -529,7 +540,10 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                 decoration: BoxDecoration(
                   color: AppTheme.cardBg.withAlpha(120),
                   borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: AppTheme.accentTeal.withAlpha(70), width: 1.2),
+                  border: Border.all(
+                    color: AppTheme.accentTeal.withAlpha(70),
+                    width: 1.2,
+                  ),
                 ),
                 child: Row(
                   children: [

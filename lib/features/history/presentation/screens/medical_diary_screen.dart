@@ -185,7 +185,7 @@ class _MedicalDiaryScreenState extends State<MedicalDiaryScreen> {
 
   Widget _buildList(List<HistoryEntry> history) {
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
       itemCount: history.length,
       itemBuilder: (context, index) {
         final entry = history[index];
