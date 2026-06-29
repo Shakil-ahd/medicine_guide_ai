@@ -26,7 +26,7 @@ class MedicineLocalDataSourceImpl implements MedicineLocalDataSource {
     final dbLower = dbName.toLowerCase();
     final ocrLower = ocrText.toLowerCase();
 
-    // Helper to tokenize a string into alphanumeric components
+    
     List<String> tokenize(String text) {
       return RegExp(
         r'([a-zA-Z]+|\d+(?:\.\d+)?)',
@@ -38,11 +38,11 @@ class MedicineLocalDataSourceImpl implements MedicineLocalDataSource {
 
     if (dbTokens.isEmpty) return false;
 
-    // The first token of DB name is the brand name (e.g. "seclo", "napa")
+    
     final brandToken = dbTokens.first;
     if (!ocrTokens.contains(brandToken)) return false;
 
-    // If not strict mode, matching the brand name token is enough
+    
     if (!strict) return true;
 
     final units = {
@@ -69,7 +69,7 @@ class MedicineLocalDataSourceImpl implements MedicineLocalDataSource {
       'drops',
     };
 
-    // Extract all numbers from DB name to identify primary strength
+    
     final dbNumbers = dbTokens
         .where((t) => RegExp(r'^\d+(?:\.\d+)?$').hasMatch(t))
         .toList();
@@ -79,14 +79,14 @@ class MedicineLocalDataSourceImpl implements MedicineLocalDataSource {
       if (units.contains(token)) continue;
 
       if (RegExp(r'^\d+(?:\.\d+)?$').hasMatch(token)) {
-        // Only the first number (primary strength) is mandatory
+        
         if (token == primaryDbNumber) {
           if (!ocrTokens.contains(token)) {
             return false;
           }
         }
       } else {
-        // Word modifiers (like "extra", "extend", "plus") of length >= 2 must be matched
+        
         if (token.length >= 2 && !ocrTokens.contains(token)) {
           return false;
         }
@@ -134,7 +134,7 @@ class MedicineLocalDataSourceImpl implements MedicineLocalDataSource {
 
     if (whereClauses.isEmpty) return null;
 
-    // Fetch candidate rows starting with any matching token prefix
+    
     final results = await db.query(
       'medicines',
       where: whereClauses.join(' OR '),
@@ -143,7 +143,7 @@ class MedicineLocalDataSourceImpl implements MedicineLocalDataSource {
 
     if (results.isEmpty) return null;
 
-    // Filter and score candidates (Pass 1: Strict Match)
+    
     List<Map<String, dynamic>> matchingCandidates = [];
     final Map<String, int> candidateScores = {};
 
@@ -155,7 +155,7 @@ class MedicineLocalDataSourceImpl implements MedicineLocalDataSource {
       }
     }
 
-    // Pass 2: Relaxed Match (Fallback) if Pass 1 returned no results
+    
     if (matchingCandidates.isEmpty) {
       for (final row in results) {
         final dbName = row['name'] as String? ?? '';
@@ -168,7 +168,7 @@ class MedicineLocalDataSourceImpl implements MedicineLocalDataSource {
 
     if (matchingCandidates.isEmpty) return null;
 
-    // Sort matching candidates by score descending, then by name length descending
+    
     matchingCandidates.sort((a, b) {
       final nameA = a['name'] as String? ?? '';
       final nameB = b['name'] as String? ?? '';
@@ -184,7 +184,7 @@ class MedicineLocalDataSourceImpl implements MedicineLocalDataSource {
     final brandName = matchedRow['name'] as String;
     final genericName = matchedRow['genericName'] as String? ?? '';
 
-    // Query alternatives dynamically
+    
     try {
       final alternatives = await db.query(
         'medicines',

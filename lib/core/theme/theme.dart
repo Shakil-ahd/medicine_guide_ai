@@ -2,20 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Premium Neon and Dark Color Palette
-  static const Color darkBg = Color(0xFF070A13); // Richer deeper black-blue
-  static const Color cardBg = Color(0xFF111827); // Sleek modern dark grey-blue
-  static const Color accentTeal = Color(0xFF00E676); // High-vibrancy Neon Teal
-  static const Color accentIndigo = Color(0xFF6366F1); // Modern Premium Indigo
-  static const Color warningRed = Color(0xFFFF5252); // Vibrant Warning Red
-  static const Color textPrimary = Color(0xFFF9FAFB); // Pure White-Grey
-  static const Color textSecondary = Color(0xFF9CA3AF); // Neutral Cool Grey
+  
+  static const Color darkBg = Color(0xFF070A13); 
+  static const Color cardBg = Color(0xFF111827); 
+  static const Color accentTeal = Color(0xFF00E676); 
+  static const Color accentIndigo = Color(0xFF6366F1); 
+  static const Color warningRed = Color(0xFFFF5252); 
+  static const Color textPrimary = Color(0xFFF9FAFB); 
+  static const Color textSecondary = Color(0xFF9CA3AF); 
 
-  // Custom Glassmorphism / Acrylic Colors
+  
   static Color glassBg = const Color(0xFF1E293B).withAlpha(140);
   static Color glassBorder = const Color(0xFF334155).withAlpha(100);
 
-  // Premium Linear Gradients
+  
   static const Gradient primaryGradient = LinearGradient(
     colors: [accentTeal, accentIndigo],
     begin: Alignment.topLeft,

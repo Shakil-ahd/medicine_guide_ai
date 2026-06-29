@@ -84,7 +84,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
       return;
     }
 
-    // Request standard notification permission
+    
     try {
       final bool notificationGranted = await NotificationService.instance.requestPermissions();
       if (!notificationGranted && mounted) {

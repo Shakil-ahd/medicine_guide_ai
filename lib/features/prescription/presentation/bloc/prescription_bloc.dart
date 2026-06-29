@@ -41,7 +41,7 @@ class PrescriptionBloc extends Bloc<PrescriptionEvent, PrescriptionState> {
         return;
       }
 
-      // Check if there is a validation error in the response
+      
       if (result.isNotEmpty &&
           result.first is Map &&
           (result.first as Map).containsKey('error')) {

@@ -20,7 +20,7 @@ class SettingsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Beautiful Header Banner
+              
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
@@ -92,7 +92,7 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 28),
 
-              // Settings Items Container
+              
               const Padding(
                 padding: EdgeInsets.only(left: 4, bottom: 10),
                 child: Text(
@@ -149,7 +149,7 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 40),
 
-              // Simple Footer
+              
               Center(
                 child: Column(
                   children: [

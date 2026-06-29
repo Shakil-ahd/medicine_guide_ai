@@ -27,7 +27,7 @@ class DatabaseHelper {
     if (!exists) {
       try {
         await Directory(dirname(path)).create(recursive: true);
-        // Load the compressed database from assets
+        
         final ByteData data = await rootBundle.load(
           join('assets', 'database', 'preseeded_medicines.db.gz'),
         );
@@ -36,10 +36,10 @@ class DatabaseHelper {
           data.lengthInBytes,
         );
 
-        // Decompress the database using GZipCodec
+        
         final List<int> decompressedBytes = GZipCodec().decode(compressedBytes);
 
-        // Write the decompressed database to local documents
+        
         await File(path).writeAsBytes(decompressedBytes, flush: true);
         debugPrint(
           'Successfully decompressed and copied preseeded database from assets',
