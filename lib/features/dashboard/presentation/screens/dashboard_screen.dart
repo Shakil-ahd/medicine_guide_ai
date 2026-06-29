@@ -2,6 +2,7 @@ import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:medicine_guide_ai/core/constants/app_strings.dart';
 import 'package:medicine_guide_ai/core/constants/constants.dart';
 import 'package:medicine_guide_ai/core/services/database_helper.dart';
 import 'package:medicine_guide_ai/core/services/ai_scanner_service.dart';
@@ -77,7 +78,7 @@ class DashboardScreen extends StatelessWidget {
       AppConstants.appName,
       AppConstants.pillReminder,
       AppConstants.medicalDiary,
-      'সেটিংস',
+      AppStrings.settingsTab,
     ];
     return AppBar(
       backgroundColor: AppTheme.darkBg,
@@ -144,10 +145,10 @@ class DashboardScreen extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNavItem(context, 0, currentIndex, Icons.home_rounded, 'হোম'),
-                _buildNavItem(context, 1, currentIndex, Icons.alarm_rounded, 'রিমাইন্ডার'),
-                _buildNavItem(context, 2, currentIndex, Icons.history_edu_rounded, 'হিস্ট্রি'),
-                _buildNavItem(context, 3, currentIndex, Icons.settings_rounded, 'সেটিংস'),
+                _buildNavItem(context, 0, currentIndex, Icons.home_rounded, AppStrings.homeTab),
+                _buildNavItem(context, 1, currentIndex, Icons.alarm_rounded, AppStrings.reminderTab),
+                _buildNavItem(context, 2, currentIndex, Icons.history_edu_rounded, AppStrings.historyTab),
+                _buildNavItem(context, 3, currentIndex, Icons.settings_rounded, AppStrings.settingsTab),
               ],
             ),
           ),
@@ -209,11 +210,11 @@ class DashboardScreen extends StatelessWidget {
       children: [
         _buildWelcomeBanner(),
         const SizedBox(height: 24),
-        _buildSectionHeader('দ্রুত অ্যাক্সেস'),
+        _buildSectionHeader(AppStrings.quickAccess),
         const SizedBox(height: 14),
         _buildFeatureGrid(context),
         const SizedBox(height: 24),
-        _buildSectionHeader('কিভাবে ব্যবহার করবেন'),
+        _buildSectionHeader(AppStrings.howToUse),
         const SizedBox(height: 14),
         _buildHowToUse(),
         const SizedBox(height: 20),
@@ -272,12 +273,12 @@ class DashboardScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           const Text(
-            'স্বাগতম! 👋',
+            AppStrings.welcomeText,
             style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           const SizedBox(height: 8),
           const Text(
-            'ওষুধের পাতা স্ক্যান করুন অথবা প্রেসক্রিপশন আপলোড করে বিস্তারিত তথ্য ও নির্দেশিকা পান।',
+            AppStrings.welcomeDesc,
             style: TextStyle(fontSize: 14, color: AppTheme.textSecondary, height: 1.55),
           ),
         ],
@@ -345,8 +346,8 @@ class DashboardScreen extends StatelessWidget {
         const SizedBox(height: 14),
         _buildFeatureCardFullWidth(
           context: context,
-          title: 'ওষুধ খুঁজুন',
-          subtitle: 'নাম বা জেনেরিক দিয়ে ম্যানুয়ালি খুঁজুন',
+          title: AppStrings.searchMedicine,
+          subtitle: AppStrings.searchMedicineDesc,
           icon: Icons.search_rounded,
           gradientColors: [const Color(0xFFD81B60), const Color(0xFFEC407A)],
           onTap: () => Navigator.push(
@@ -494,9 +495,9 @@ class DashboardScreen extends StatelessWidget {
 
   Widget _buildHowToUse() {
     const steps = [
-      (Icons.camera_alt_rounded, 'ছবি তুলুন / স্ক্যান করুন', 'ওষুধের পাতা বা প্রেসক্রিপশনের স্পষ্ট ছবি নিন'),
-      (Icons.search_rounded, 'সার্চ বার ব্যবহার করুন', 'ওষুধের নাম বা জেনেরিক নাম লিখে সরাসরি খুঁজুন'),
-      (Icons.auto_awesome_rounded, 'স্বয়ংক্রিয় বিশ্লেষণ ও অনুবাদ', 'লোকাল ডাটাবেজ বা এআই দিয়ে বিস্তারিত তথ্য বাংলায় দেখুন'),
+      (Icons.camera_alt_rounded, AppStrings.howToStep1Title, AppStrings.howToStep1Desc),
+      (Icons.search_rounded, AppStrings.howToStep2Title, AppStrings.howToStep2Desc),
+      (Icons.auto_awesome_rounded, AppStrings.howToStep3Title, AppStrings.howToStep3Desc),
     ];
 
     return Container(
@@ -591,17 +592,17 @@ class DashboardScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   const Text(
-                    'ওষুধ স্ক্যান করুন',
+                    AppStrings.scanMedicineDialogTitle,
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
                   ),
                   const SizedBox(height: 6),
-                  const Text('ছবির উৎস নির্বাচন করুন', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
+                  const Text(AppStrings.scanSourceSelect, style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
                   const SizedBox(height: 24),
                   Row(
                     children: [
-                      Expanded(child: _buildSheetOption(context, sheetCtx, 'ক্যামেরা', Icons.camera_alt_rounded, ImageSource.camera, AppTheme.accentTeal)),
+                      Expanded(child: _buildSheetOption(context, sheetCtx, AppStrings.camera, Icons.camera_alt_rounded, ImageSource.camera, AppTheme.accentTeal)),
                       const SizedBox(width: 14),
-                      Expanded(child: _buildSheetOption(context, sheetCtx, 'গ্যালারি', Icons.photo_library_rounded, ImageSource.gallery, AppTheme.accentIndigo)),
+                      Expanded(child: _buildSheetOption(context, sheetCtx, AppStrings.gallery, Icons.photo_library_rounded, ImageSource.gallery, AppTheme.accentIndigo)),
                     ],
                   ),
                   const SizedBox(height: 8),

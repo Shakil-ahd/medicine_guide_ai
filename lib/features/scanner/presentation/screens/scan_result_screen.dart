@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medicine_guide_ai/core/constants/app_strings.dart';
 import 'package:medicine_guide_ai/core/constants/constants.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
 import 'package:medicine_guide_ai/features/scanner/presentation/bloc/medicine_bloc.dart';
@@ -93,7 +94,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('সফলভাবে বাংলায় অনুবাদ করা হয়েছে!')),
+          const SnackBar(content: Text(AppSnackbars.translateSuccess)),
         );
       }
     } catch (e) {
@@ -159,7 +160,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
             ScannerLoader(size: 100),
             SizedBox(height: 32),
             Text(
-              "বিশ্লেষণ করা হচ্ছে...",
+              AppStrings.analyzing,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -168,7 +169,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
             ),
             SizedBox(height: 12),
             Text(
-              "ওষুধের তথ্য সংগ্রহ করা হচ্ছে\nঅনুগ্রহ করে অপেক্ষা করুন",
+              AppStrings.collectingData,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
@@ -208,7 +209,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
             ),
             const SizedBox(height: 24),
             const Text(
-              "তথ্য পাওয়া যায়নি",
+              AppStrings.noDataFound,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -240,7 +241,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                   child: OutlinedButton.icon(
                     onPressed: () => Navigator.pop(context),
                     icon: const Icon(Icons.arrow_back_rounded),
-                    label: const Text("ফিরে যান"),
+                    label: const Text(AppStrings.goBack),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppTheme.textSecondary,
                       side: const BorderSide(color: Color(0xFF263238)),
@@ -260,7 +261,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                           .add(ScanMedicineEvent(widget.imagePath));
                     },
                     icon: const Icon(Icons.refresh_rounded),
-                    label: const Text("আবার চেষ্টা"),
+                    label: const Text(AppStrings.retry),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.accentTeal,
                       foregroundColor: Colors.white,
@@ -300,35 +301,35 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                 _buildTtsControls(context, ttsText),
                 const SizedBox(height: 20),
                 _buildInfoSection(
-                  "নির্দেশনা",
+                  AppStrings.indicationsHeader,
                   _indications,
                   Icons.healing_rounded,
                   AppTheme.accentTeal,
                 ),
                 const SizedBox(height: 12),
                 _buildInfoSection(
-                  "সেবনমাত্রা",
+                  AppStrings.dosageHeader,
                   _dosage,
                   Icons.medical_services_rounded,
                   const Color(0xFF42A5F5),
                 ),
                 const SizedBox(height: 12),
                 _buildInfoSection(
-                  "খাওয়ার নিয়ম",
+                  AppStrings.instructionsHeader,
                   _instructions,
                   Icons.info_outline_rounded,
                   const Color(0xFFA78BFA),
                 ),
                 const SizedBox(height: 12),
                 _buildInfoSection(
-                  "পার্শ্বপ্রতিক্রিয়া",
+                  AppStrings.sideEffectsHeader,
                   _sideEffects,
                   Icons.report_problem_rounded,
                   AppTheme.warningRed,
                 ),
                 const SizedBox(height: 12),
                 _buildInfoSection(
-                  "আনুমানিক মূল্য",
+                  AppStrings.priceHeader,
                   medicine.price,
                   Icons.monetization_on_rounded,
                   const Color(0xFFFBBF24),
@@ -468,8 +469,8 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
               ),
               label: Text(
                 _isBengali
-                    ? 'ইংরেজিতে দেখুন (English)'
-                    : 'বাংলায় অনুবাদ করুন (Translate)',
+                    ? AppStrings.translateToEnglish
+                    : AppStrings.translateToBengali,
                 style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
               ),
               style: OutlinedButton.styleFrom(
@@ -522,7 +523,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                   Icon(Icons.volume_up_rounded),
                   SizedBox(width: 8),
                   Text(
-                    "পড়ে শোনান",
+                    AppStrings.speakText,
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ],
@@ -570,7 +571,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
     Color color,
   ) {
     if (content.isEmpty) {
-      content = 'তথ্য পাওয়া যায়নি';
+      content = AppStrings.noDataFound;
     }
 
     final isLong = content.length > 150;
@@ -641,7 +642,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          isExpanded ? 'কমিয়ে দেখান' : 'আরও পড়ুন',
+                          isExpanded ? AppStrings.showLess : AppStrings.readMore,
                           style: TextStyle(
                             color: color,
                             fontSize: 13,
@@ -684,7 +685,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
             ),
             const SizedBox(width: 10),
             const Text(
-              "বিকল্প ওষুধ",
+              AppStrings.alternativesHeader,
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.bold,
@@ -739,7 +740,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('ওষুধের বিস্তারিত তথ্য পাওয়া যায়নি'),
+                        content: Text(AppErrors.detailsNotFound),
                       ),
                     );
                   }

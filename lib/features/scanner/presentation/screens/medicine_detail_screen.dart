@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:medicine_guide_ai/core/constants/app_strings.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
 import 'package:medicine_guide_ai/features/scanner/domain/entities/medicine.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -90,35 +91,35 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                   _buildTtsButton(),
                   const SizedBox(height: 20),
                   _buildInfoSection(
-                    "নির্দেশনা",
+                    AppStrings.indicationsHeader,
                     _indications,
                     Icons.healing_rounded,
                     AppTheme.accentTeal,
                   ),
                   const SizedBox(height: 12),
                   _buildInfoSection(
-                    "সেবনমাত্রা",
+                    AppStrings.dosageHeader,
                     _dosage,
                     Icons.medical_services_rounded,
                     const Color(0xFF42A5F5),
                   ),
                   const SizedBox(height: 12),
                   _buildInfoSection(
-                    "খাওয়ার নিয়ম",
+                    AppStrings.instructionsHeader,
                     _instructions,
                     Icons.info_outline_rounded,
                     const Color(0xFFA78BFA),
                   ),
                   const SizedBox(height: 12),
                   _buildInfoSection(
-                    "পার্শ্বপ্রতিক্রিয়া",
+                    AppStrings.sideEffectsHeader,
                     _sideEffects,
                     Icons.report_problem_rounded,
                     AppTheme.warningRed,
                   ),
                   const SizedBox(height: 12),
                   _buildInfoSection(
-                    "আনুমানিক মূল্য",
+                    AppStrings.priceHeader,
                     m.price,
                     Icons.monetization_on_rounded,
                     const Color(0xFFFBBF24),
@@ -191,7 +192,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('সফলভাবে বাংলায় অনুবাদ করা হয়েছে!')),
+          const SnackBar(content: Text(AppSnackbars.translateSuccess)),
         );
       }
     } catch (e) {
@@ -280,8 +281,8 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
               ),
               label: Text(
                 _isBengali
-                    ? 'ইংরেজিতে দেখুন (English)'
-                    : 'বাংলায় অনুবাদ করুন (Translate)',
+                    ? AppStrings.translateToEnglish
+                    : AppStrings.translateToBengali,
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -342,7 +343,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
             ),
             const SizedBox(width: 8),
             Text(
-              _isPlaying ? "পড়া থামান" : "পড়ে শোনান",
+              _isPlaying ? AppStrings.stopSpeaking : AppStrings.speakText,
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ],
@@ -358,7 +359,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
     Color color,
   ) {
     if (content.isEmpty) {
-      content = 'তথ্য পাওয়া যায়নি';
+      content = AppStrings.noDataFound;
     }
 
     final isLong = content.length > 150;
@@ -428,7 +429,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          isExpanded ? 'কমিয়ে দেখান' : 'আরও পড়ুন',
+                          isExpanded ? AppStrings.showLess : AppStrings.readMore,
                           style: TextStyle(
                             color: color,
                             fontSize: 13,
@@ -471,7 +472,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
             ),
             const SizedBox(width: 10),
             const Text(
-              "বিকল্প ওষুধ",
+              AppStrings.alternativesHeader,
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.bold,
@@ -526,7 +527,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('ওষুধের বিস্তারিত তথ্য পাওয়া যায়নি'),
+                        content: Text(AppErrors.detailsNotFound),
                       ),
                     );
                   }

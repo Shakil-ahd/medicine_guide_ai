@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medicine_guide_ai/core/constants/app_strings.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
 import 'package:medicine_guide_ai/core/widgets/custom_snackbar.dart';
 import 'package:medicine_guide_ai/core/services/notification_service.dart';
@@ -76,19 +77,18 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
 
   Future<void> _save() async {
     if (_nameController.text.trim().isEmpty) {
-      CustomSnackBar.showError(context, 'ওষুধের নাম দিন');
+      CustomSnackBar.showError(context, AppErrors.enterMedicineName);
       return;
     }
     if (_selectedDays.isEmpty) {
-      CustomSnackBar.showError(context, 'কমপক্ষে একটি দিন নির্বাচন করুন');
+      CustomSnackBar.showError(context, AppErrors.selectAtLeastOneDay);
       return;
     }
 
-    
     try {
       final bool notificationGranted = await NotificationService.instance.requestPermissions();
       if (!notificationGranted && mounted) {
-        CustomSnackBar.showError(context, 'রিমাইন্ডার কাজ করার জন্য নোটিফিকেশন পারমিশন প্রয়োজন। অনুগ্রহ করে নোটিফিকেশন চালু করুন।');
+        CustomSnackBar.showError(context, AppErrors.notificationPermissionRequired);
         return;
       }
     } catch (e) {
@@ -125,14 +125,14 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
     return Scaffold(
       backgroundColor: AppTheme.darkBg,
       appBar: AppBar(
-        title: Text(isEditing ? 'রিমাইন্ডার সম্পাদনা' : 'নতুন রিমাইন্ডার'),
+        title: Text(isEditing ? AppStrings.editReminderTitle : AppStrings.addReminderTitle),
         backgroundColor: AppTheme.darkBg,
         elevation: 0,
         actions: [
           TextButton(
             onPressed: _save,
             child: const Text(
-              'সংরক্ষণ',
+              AppStrings.save,
               style: TextStyle(
                 color: AppTheme.accentTeal,
                 fontWeight: FontWeight.bold,
@@ -149,23 +149,23 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
           children: [
             _buildTextField(
               controller: _nameController,
-              label: 'ওষুধের নাম',
-              hint: 'যেমন: Napa, Losec, Metformin...',
+              label: AppStrings.medicineNameLabel,
+              hint: AppStrings.medicineNameHint,
               icon: Icons.medication_rounded,
             ),
             const SizedBox(height: 16),
             _buildTextField(
               controller: _doseController,
-              label: 'মাত্রা / নির্দেশনা',
-              hint: 'যেমন: ১টি ট্যাবলেট খাবারের পর',
+              label: AppStrings.doseLabel,
+              hint: AppStrings.doseHint,
               icon: Icons.info_outline_rounded,
             ),
             const SizedBox(height: 24),
-            _buildSectionLabel('সময় নির্বাচন'),
+            _buildSectionLabel(AppStrings.timeSelection),
             const SizedBox(height: 12),
             _buildTimePicker(),
             const SizedBox(height: 24),
-            _buildSectionLabel('সপ্তাহের দিন'),
+            _buildSectionLabel(AppStrings.daysOfWeek),
             const SizedBox(height: 12),
             _buildDayPicker(),
             const SizedBox(height: 32),
@@ -273,7 +273,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                   ),
                 ),
                 const Text(
-                  'ট্যাপ করে সময় পরিবর্তন করুন',
+                  AppStrings.timeSelectionDesc,
                   style: TextStyle(
                     color: AppTheme.textSecondary,
                     fontSize: 12,
@@ -372,7 +372,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
             const Icon(Icons.alarm_add_rounded),
             const SizedBox(width: 8),
             Text(
-              widget.existing != null ? 'আপডেট করুন' : 'রিমাইন্ডার যোগ করুন',
+              widget.existing != null ? AppStrings.update : AppStrings.addReminder,
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,

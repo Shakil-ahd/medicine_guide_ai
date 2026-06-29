@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medicine_guide_ai/core/constants/app_strings.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
 import 'package:medicine_guide_ai/core/widgets/scanner_loader.dart';
 import 'package:medicine_guide_ai/features/reminder/domain/entities/reminder.dart';
@@ -25,6 +26,7 @@ class ReminderScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.darkBg,
+      floatingActionButtonLocation: const _CustomFloatingActionButtonLocation(),
       body: BlocBuilder<ReminderBloc, ReminderState>(
         builder: (context, state) {
           if (state is ReminderLoading) {
@@ -64,7 +66,7 @@ class ReminderScreen extends StatelessWidget {
           highlightElevation: 0,
           icon: const Icon(Icons.alarm_add_rounded, color: Colors.white),
           label: const Text(
-            'নতুন রিমাইন্ডার',
+            AppStrings.addReminderTitle,
             style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -100,7 +102,7 @@ class ReminderScreen extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           const Text(
-            'কোনো রিমাইন্ডার নেই',
+            AppStrings.noReminders,
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -109,7 +111,7 @@ class ReminderScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           const Text(
-            'নতুন রিমাইন্ডার যোগ করুন এবং\nওষুধ খাওয়ার সময় মনে রাখুন',
+            AppStrings.noRemindersDesc,
             textAlign: TextAlign.center,
             style: TextStyle(color: AppTheme.textSecondary, height: 1.5),
           ),
@@ -117,7 +119,7 @@ class ReminderScreen extends StatelessWidget {
           ElevatedButton.icon(
             onPressed: () => _openAdd(context),
             icon: const Icon(Icons.add_rounded),
-            label: const Text('রিমাইন্ডার যোগ করুন'),
+            label: const Text(AppStrings.addReminder),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.accentTeal,
               foregroundColor: Colors.white,
@@ -140,13 +142,13 @@ class ReminderScreen extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
       children: [
         if (active.isNotEmpty) ...[
-          _buildSectionHeader('সক্রিয় রিমাইন্ডার', active.length),
+          _buildSectionHeader(AppStrings.activeReminders, active.length),
           const SizedBox(height: 10),
           ...active.map((r) => _buildReminderCard(context, r)),
         ],
         if (inactive.isNotEmpty) ...[
           const SizedBox(height: 16),
-          _buildSectionHeader('নিষ্ক্রিয়', inactive.length),
+          _buildSectionHeader(AppStrings.inactiveReminders, inactive.length),
           const SizedBox(height: 10),
           ...inactive.map((r) => _buildReminderCard(context, r)),
         ],
@@ -431,5 +433,22 @@ class ReminderScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _CustomFloatingActionButtonLocation extends FloatingActionButtonLocation {
+  const _CustomFloatingActionButtonLocation();
+
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
+    final double fabX = scaffoldGeometry.scaffoldSize.width -
+        scaffoldGeometry.floatingActionButtonSize.width -
+        16 -
+        scaffoldGeometry.minInsets.right;
+    final double fabY = scaffoldGeometry.scaffoldSize.height -
+        scaffoldGeometry.floatingActionButtonSize.height -
+        110 -
+        scaffoldGeometry.minInsets.bottom;
+    return Offset(fabX, fabY);
   }
 }

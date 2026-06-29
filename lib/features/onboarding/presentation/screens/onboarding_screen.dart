@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medicine_guide_ai/core/constants/app_strings.dart';
 import 'package:medicine_guide_ai/core/constants/constants.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
 import 'package:medicine_guide_ai/core/services/database_helper.dart';
@@ -41,7 +42,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       }
     } catch (_) {
       if (mounted) {
-        CustomSnackBar.showError(context, 'অনুগ্রহ করে আবার চেষ্টা করুন।');
+        CustomSnackBar.showError(context, AppErrors.tryAgain);
       }
     } finally {
       if (mounted) {
@@ -124,7 +125,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                         const SizedBox(height: 6),
                         const Text(
-                          'আপনার নির্ভরযোগ্য স্বাস্থ্য নির্দেশিকা',
+                          AppStrings.appSubtitle,
                           style: TextStyle(
                             fontSize: 14,
                             color: AppTheme.textSecondary,
@@ -135,22 +136,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         _buildFeatureRow(
                           Icons.qr_code_scanner_rounded,
                           AppTheme.accentTeal,
-                          'ওষুধ স্ক্যানার ও তথ্য বিশ্লেষণ',
-                          'যেকোনো ওষুধের পাতা স্ক্যান করে তার কার্যকারিতা, পার্শ্বপ্রতিক্রিয়া এবং বিকল্প ওষুধ জানুন মুহূর্তেই।',
+                          AppStrings.onboardingScanTitle,
+                          AppStrings.onboardingScanDesc,
                         ),
                         const SizedBox(height: 20),
                         _buildFeatureRow(
                           Icons.history_edu_rounded,
                           AppTheme.accentIndigo,
-                          'প্রেসক্রিপশন রিডার ও গাইড',
-                          'প্রেসক্রিপশন আপলোড করে কোন ওষুধ কেন এবং কীভাবে খেতে বলা হয়েছে তা বিস্তারিত জানুন বাংলায়।',
+                          AppStrings.onboardingReaderTitle,
+                          AppStrings.onboardingReaderDesc,
                         ),
                         const SizedBox(height: 20),
                         _buildFeatureRow(
                           Icons.alarm_on_rounded,
                           AppTheme.accentTeal,
-                          'স্মার্ট মেডিসিন রিমাইন্ডার',
-                          'সময়মতো ওষুধ খাওয়ার জন্য সহজে রিমাইন্ডার সেট করুন এবং নোটিফিকেশন পান।',
+                          AppStrings.onboardingReminderTitle,
+                          AppStrings.onboardingReminderDesc,
                         ),
                         const SizedBox(height: 40),
                         Container(
@@ -181,7 +182,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   ),
                                   const SizedBox(width: 10),
                                   Text(
-                                    'চিকিৎসা সতর্কীকরণ ও দায়মুক্তি',
+                                    AppStrings.disclaimerTitle,
                                     style: TextStyle(
                                       color: AppTheme.warningRed,
                                       fontWeight: FontWeight.bold,
@@ -193,7 +194,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               ),
                               const SizedBox(height: 12),
                               const Text(
-                                'এই অ্যাপ্লিকেশনের সমস্ত তথ্য ও প্রেসক্রিপশন বিশ্লেষণ শুধুমাত্র সাধারণ জ্ঞান এবং তথ্যের উদ্দেশ্যে প্রদান করা হয়েছে। এটি কোনো পেশাদার চিকিৎসকের পরামর্শ বা চিকিৎসার বিকল্প নয়। কোনো ওষুধ সেবন বা বন্ধ করার আগে সর্বদা একজন নিবন্ধিত চিকিৎসকের পরামর্শ নিন। অ্যাপের বিশ্লেষণের ওপর ভিত্তি করে নিজে নিজে স্ব-চিকিৎসা করা থেকে বিরত থাকুন।',
+                                AppStrings.disclaimerDetail,
                                 style: TextStyle(
                                   color: AppTheme.textPrimary,
                                   fontSize: 12.5,
@@ -248,7 +249,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             const SizedBox(width: 12),
                             const Expanded(
                               child: Text(
-                                'আমি সতর্কীকরণটি পড়েছি এবং একমত পোষণ করছি।',
+                                AppStrings.acceptDisclaimer,
                                 style: TextStyle(
                                   fontSize: 13.5,
                                   color: AppTheme.textPrimary,
@@ -299,7 +300,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         child: _isSaving
                             ? const ScannerLoader(size: 24)
                             : const Text(
-                                'অ্যাপ শুরু করুন',
+                                AppStrings.startApp,
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
