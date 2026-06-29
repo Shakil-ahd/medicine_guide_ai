@@ -184,9 +184,9 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.cardBg,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFF263238)),
+        color: AppTheme.cardBg.withAlpha(120),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF1F2937), width: 1.2),
       ),
       child: TextField(
         controller: controller,
@@ -195,7 +195,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
           labelText: label,
           labelStyle: const TextStyle(color: AppTheme.textSecondary),
           hintText: hint,
-          hintStyle: const TextStyle(color: Color(0xFF546E7A), fontSize: 13),
+          hintStyle: const TextStyle(color: Color(0xFF4B5563), fontSize: 13),
           prefixIcon: Icon(icon, color: AppTheme.accentTeal, size: 20),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -235,8 +235,14 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: AppTheme.cardBg,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.accentTeal.withAlpha(80)),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppTheme.accentTeal.withAlpha(80), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.accentTeal.withAlpha(15),
+              blurRadius: 16,
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -307,7 +313,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
               border: Border.all(
                 color: isSelected
                     ? AppTheme.accentTeal
-                    : const Color(0xFF263238),
+                    : const Color(0xFF1F2937),
               ),
               boxShadow: isSelected
                   ? [
@@ -335,25 +341,45 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
   }
 
   Widget _buildSaveButton() {
-    return SizedBox(
+    return Container(
       width: double.infinity,
-      child: ElevatedButton.icon(
+      height: 52,
+      decoration: BoxDecoration(
+        gradient: AppTheme.primaryGradient,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.accentTeal.withAlpha(60),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ElevatedButton(
         onPressed: _save,
-        icon: const Icon(Icons.alarm_add_rounded),
-        label: Text(
-          widget.existing != null ? 'আপডেট করুন' : 'রিমাইন্ডার যোগ করুন',
-        ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppTheme.accentTeal,
+          backgroundColor: Colors.transparent,
           foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          shadowColor: Colors.transparent,
+          elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(16),
           ),
-          textStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.alarm_add_rounded),
+            const SizedBox(width: 8),
+            Text(
+              widget.existing != null ? 'আপডেট করুন' : 'রিমাইন্ডার যোগ করুন',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -59,7 +59,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [AppTheme.darkBg, Color(0xFF0F1524)],
+            colors: [Color(0xFF05070F), Color(0xFF0F172A), Color(0xFF05070F)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -77,8 +77,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       children: [
                         const SizedBox(height: 30),
                         Container(
-                          width: 90,
-                          height: 90,
+                          width: 96,
+                          height: 96,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             gradient: const LinearGradient(
@@ -88,26 +88,38 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: AppTheme.accentTeal.withAlpha(50),
-                                blurRadius: 20,
+                                color: AppTheme.accentTeal.withAlpha(60),
+                                blurRadius: 25,
                                 offset: const Offset(0, 8),
+                              ),
+                              BoxShadow(
+                                color: AppTheme.accentIndigo.withAlpha(40),
+                                blurRadius: 20,
+                                offset: const Offset(0, 4),
                               ),
                             ],
                           ),
                           child: const Icon(
                             Icons.health_and_safety_rounded,
-                            size: 50,
+                            size: 52,
                             color: Colors.white,
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 24),
                         const Text(
                           AppConstants.appName,
                           style: TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w900,
                             color: AppTheme.textPrimary,
-                            letterSpacing: 0.5,
+                            letterSpacing: 0.6,
+                            shadows: [
+                              Shadow(
+                                color: AppTheme.accentIndigo,
+                                blurRadius: 8,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
                           ),
                         ),
                         const SizedBox(height: 6),
@@ -116,39 +128,46 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           style: TextStyle(
                             fontSize: 14,
                             color: AppTheme.textSecondary,
+                            letterSpacing: 0.2,
                           ),
                         ),
-                        const SizedBox(height: 35),
+                        const SizedBox(height: 40),
                         _buildFeatureRow(
                           Icons.qr_code_scanner_rounded,
                           AppTheme.accentTeal,
                           'ওষুধ স্ক্যানার ও তথ্য বিশ্লেষণ',
                           'যেকোনো ওষুধের পাতা স্ক্যান করে তার কার্যকারিতা, পার্শ্বপ্রতিক্রিয়া এবং বিকল্প ওষুধ জানুন মুহূর্তেই।',
                         ),
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 20),
                         _buildFeatureRow(
                           Icons.history_edu_rounded,
                           AppTheme.accentIndigo,
                           'প্রেসক্রিপশন রিডার ও গাইড',
                           'প্রেসক্রিপশন আপলোড করে কোন ওষুধ কেন এবং কীভাবে খেতে বলা হয়েছে তা বিস্তারিত জানুন বাংলায়।',
                         ),
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 20),
                         _buildFeatureRow(
                           Icons.alarm_on_rounded,
                           AppTheme.accentTeal,
                           'স্মার্ট মেডিসিন রিমাইন্ডার',
                           'সময়মতো ওষুধ খাওয়ার জন্য সহজে রিমাইন্ডার সেট করুন এবং নোটিফিকেশন পান।',
                         ),
-                        const SizedBox(height: 35),
+                        const SizedBox(height: 40),
                         Container(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(18),
                           decoration: BoxDecoration(
-                            color: const Color(0x0DE57373),
-                            borderRadius: BorderRadius.circular(16),
+                            color: AppTheme.warningRed.withAlpha(15),
+                            borderRadius: BorderRadius.circular(20),
                             border: Border.all(
                               color: AppTheme.warningRed.withAlpha(60),
-                              width: 1,
+                              width: 1.2,
                             ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.warningRed.withAlpha(5),
+                                blurRadius: 12,
+                              ),
+                            ],
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -158,9 +177,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   const Icon(
                                     Icons.warning_amber_rounded,
                                     color: AppTheme.warningRed,
-                                    size: 20,
+                                    size: 22,
                                   ),
-                                  const SizedBox(width: 8),
+                                  const SizedBox(width: 10),
                                   Text(
                                     'চিকিৎসা সতর্কীকরণ ও দায়মুক্তি',
                                     style: TextStyle(
@@ -172,19 +191,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 10),
+                              const SizedBox(height: 12),
                               const Text(
                                 'এই অ্যাপ্লিকেশনের সমস্ত তথ্য ও প্রেসক্রিপশন বিশ্লেষণ শুধুমাত্র সাধারণ জ্ঞান এবং তথ্যের উদ্দেশ্যে প্রদান করা হয়েছে। এটি কোনো পেশাদার চিকিৎসকের পরামর্শ বা চিকিৎসার বিকল্প নয়। কোনো ওষুধ সেবন বা বন্ধ করার আগে সর্বদা একজন নিবন্ধিত চিকিৎসকের পরামর্শ নিন। অ্যাপের বিশ্লেষণের ওপর ভিত্তি করে নিজে নিজে স্ব-চিকিৎসা করা থেকে বিরত থাকুন।',
                                 style: TextStyle(
                                   color: AppTheme.textPrimary,
                                   fontSize: 12.5,
-                                  height: 1.5,
+                                  height: 1.55,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 24),
                       ],
                     ),
                   ),
@@ -198,7 +217,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           _hasAcceptedDisclaimer = !_hasAcceptedDisclaimer;
                         });
                       },
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(10),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
                         child: Row(
@@ -210,8 +229,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 value: _hasAcceptedDisclaimer,
                                 activeColor: AppTheme.accentTeal,
                                 checkColor: Colors.white,
+                                side: BorderSide(
+                                  color: _hasAcceptedDisclaimer
+                                      ? AppTheme.accentTeal
+                                      : AppTheme.textSecondary,
+                                  width: 1.5,
+                                ),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(4),
+                                  borderRadius: BorderRadius.circular(6),
                                 ),
                                 onChanged: (val) {
                                   setState(() {
@@ -220,13 +245,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 },
                               ),
                             ),
-                            const SizedBox(width: 10),
+                            const SizedBox(width: 12),
                             const Expanded(
                               child: Text(
                                 'আমি সতর্কীকরণটি পড়েছি এবং একমত পোষণ করছি।',
                                 style: TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 13.5,
                                   color: AppTheme.textPrimary,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ),
@@ -234,35 +260,55 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    SizedBox(
+                    const SizedBox(height: 14),
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
                       width: double.infinity,
                       height: 52,
+                      decoration: BoxDecoration(
+                        gradient: _hasAcceptedDisclaimer && !_isSaving
+                            ? AppTheme.primaryGradient
+                            : null,
+                        color: _hasAcceptedDisclaimer && !_isSaving
+                            ? null
+                            : const Color(0xFF1E293B),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: _hasAcceptedDisclaimer && !_isSaving
+                            ? [
+                                BoxShadow(
+                                  color: AppTheme.accentTeal.withAlpha(60),
+                                  blurRadius: 14,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ]
+                            : null,
+                      ),
                       child: ElevatedButton(
                         onPressed: _hasAcceptedDisclaimer && !_isSaving ? _completeOnboarding : null,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.accentTeal,
+                          backgroundColor: Colors.transparent,
                           foregroundColor: Colors.white,
-                          disabledBackgroundColor: AppTheme.accentTeal.withAlpha(50),
+                          disabledBackgroundColor: Colors.transparent,
                           disabledForegroundColor: Colors.white30,
-                          elevation: _hasAcceptedDisclaimer ? 4 : 0,
-                          shadowColor: AppTheme.accentTeal.withAlpha(100),
+                          shadowColor: Colors.transparent,
+                          elevation: 0,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(16),
                           ),
                         ),
-                      child: _isSaving
-                          ? const ScannerLoader(size: 24)
-                          : const Text(
-                              'অ্যাপ শুরু করুন',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                        child: _isSaving
+                            ? const ScannerLoader(size: 24)
+                            : const Text(
+                                'অ্যাপ শুরু করুন',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                ),
                               ),
-                            ),
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
                   ],
                 ),
               ],
@@ -279,47 +325,58 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     String title,
     String desc,
   ) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: iconColor.withAlpha(20),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(
-            icon,
-            color: iconColor,
-            size: 24,
-          ),
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppTheme.cardBg.withAlpha(120),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: const Color(0xFF1F2937),
+          width: 1.2,
         ),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                desc,
-                style: const TextStyle(
-                  fontSize: 12.5,
-                  color: AppTheme.textSecondary,
-                  height: 1.4,
-                ),
-              ),
-            ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: iconColor.withAlpha(25),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(
+              icon,
+              color: iconColor,
+              size: 26,
+            ),
           ),
-        ),
-      ],
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 15.5,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  desc,
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    color: AppTheme.textSecondary,
+                    height: 1.45,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

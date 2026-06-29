@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medicine_guide_ai/core/theme/theme.dart';
 import 'package:medicine_guide_ai/core/widgets/scanner_loader.dart';
@@ -47,13 +47,31 @@ class ReminderScreen extends StatelessWidget {
           return const SizedBox.shrink();
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _openAdd(context),
-        backgroundColor: AppTheme.accentTeal,
-        icon: const Icon(Icons.alarm_add_rounded, color: Colors.white),
-        label: const Text(
-          'নতুন রিমাইন্ডার',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          gradient: AppTheme.primaryGradient,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.accentTeal.withAlpha(80),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: FloatingActionButton.extended(
+          onPressed: () => _openAdd(context),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          highlightElevation: 0,
+          icon: const Icon(Icons.alarm_add_rounded, color: Colors.white),
+          label: const Text(
+            'নতুন রিমাইন্ডার',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
         ),
       ),
     );
@@ -234,17 +252,18 @@ class ReminderScreen extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
           color: AppTheme.cardBg,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: reminder.isActive
-                ? AppTheme.accentTeal.withAlpha(60)
-                : const Color(0xFF263238),
+                ? AppTheme.accentTeal.withAlpha(80)
+                : const Color(0xFF1F2937),
+            width: 1.2,
           ),
           boxShadow: reminder.isActive
               ? [
                   BoxShadow(
-                    color: AppTheme.accentTeal.withAlpha(10),
-                    blurRadius: 10,
+                    color: AppTheme.accentTeal.withAlpha(15),
+                    blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
                 ]
@@ -252,7 +271,7 @@ class ReminderScreen extends StatelessWidget {
         ),
         child: InkWell(
           onTap: () => _openEdit(context, reminder),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
@@ -262,8 +281,8 @@ class ReminderScreen extends StatelessWidget {
                   height: 44,
                   decoration: BoxDecoration(
                     color: reminder.isActive
-                        ? AppTheme.accentTeal.withAlpha(15)
-                        : const Color(0xFF263238).withAlpha(120),
+                        ? AppTheme.accentTeal.withAlpha(20)
+                        : const Color(0xFF1F2937).withAlpha(120),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(

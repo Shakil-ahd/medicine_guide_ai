@@ -85,126 +85,155 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.darkBg,
-      body: Center(
-        child: AnimatedBuilder(
-          animation: _controller,
-          builder: (context, child) {
-            return Opacity(
-              opacity: _opacityAnimation.value,
-              child: Transform.scale(
-                scale: _scaleAnimation.value,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppTheme.accentTeal.withAlpha(15),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppTheme.accentTeal.withAlpha(30),
-                            blurRadius: 30,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                      ),
-                      child: AnimatedBuilder(
-                        animation: _scannerController,
-                        builder: (context, child) {
-                          return Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Container(
-                                width: 100,
-                                height: 100,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: AppTheme.accentTeal.withAlpha(40),
-                                    width: 1.5,
-                                  ),
-                                ),
-                              ),
-                              const Icon(
-                                Icons.description_rounded,
-                                size: 48,
-                                color: Colors.white,
-                              ),
-                              const Icon(
-                                Icons.document_scanner_outlined,
-                                size: 80,
-                                color: AppTheme.accentTeal,
-                              ),
-                              Positioned(
-                                top: _laserAnimation.value,
-                                left: 24,
-                                right: 24,
-                                child: Container(
-                                  height: 3,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF05070F), Color(0xFF0E1326), Color(0xFF05070F)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Center(
+          child: AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              return Opacity(
+                opacity: _opacityAnimation.value,
+                child: Transform.scale(
+                  scale: _scaleAnimation.value,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 130,
+                        height: 130,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppTheme.accentTeal.withAlpha(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.accentTeal.withAlpha(25),
+                              blurRadius: 35,
+                              spreadRadius: 3,
+                            ),
+                            BoxShadow(
+                              color: AppTheme.accentIndigo.withAlpha(20),
+                              blurRadius: 50,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                        child: AnimatedBuilder(
+                          animation: _scannerController,
+                          builder: (context, child) {
+                            return Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Container(
+                                  width: 108,
+                                  height: 108,
                                   decoration: BoxDecoration(
-                                    color: AppTheme.accentIndigo,
-                                    borderRadius: BorderRadius.circular(2),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: AppTheme.accentIndigo.withAlpha(200),
-                                        blurRadius: 6,
-                                        spreadRadius: 1,
-                                      ),
-                                    ],
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: AppTheme.accentTeal.withAlpha(50),
+                                      width: 1.8,
+                                    ),
+                                    gradient: RadialGradient(
+                                      colors: [
+                                        AppTheme.accentTeal.withAlpha(15),
+                                        Colors.transparent,
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 28),
-                    const Text(
-                      AppConstants.appName,
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                        letterSpacing: 0.5,
-                        shadows: [
-                          Shadow(
-                            color: AppTheme.accentIndigo,
-                            blurRadius: 10,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'আপনার নির্ভরযোগ্য স্বাস্থ্য নির্দেশিকা',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppTheme.textSecondary,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                    const SizedBox(height: 48),
-                    SizedBox(
-                      width: 140,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: const LinearProgressIndicator(
-                          color: AppTheme.accentTeal,
-                          backgroundColor: Color(0xFF1E293B),
-                          minHeight: 4,
+                                const Icon(
+                                  Icons.description_rounded,
+                                  size: 48,
+                                  color: Colors.white70,
+                                ),
+                                const Icon(
+                                  Icons.document_scanner_outlined,
+                                  size: 80,
+                                  color: AppTheme.accentTeal,
+                                ),
+                                Positioned(
+                                  top: _laserAnimation.value,
+                                  left: 26,
+                                  right: 26,
+                                  child: Container(
+                                    height: 3.5,
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.accentIndigo,
+                                      borderRadius: BorderRadius.circular(4),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppTheme.accentIndigo.withAlpha(255),
+                                          blurRadius: 8,
+                                          spreadRadius: 2,
+                                        ),
+                                        BoxShadow(
+                                          color: AppTheme.accentTeal.withAlpha(200),
+                                          blurRadius: 4,
+                                          spreadRadius: 1,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 32),
+                      const Text(
+                        AppConstants.appName,
+                        style: TextStyle(
+                          fontSize: 34,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          letterSpacing: 0.8,
+                          shadows: [
+                            Shadow(
+                              color: AppTheme.accentIndigo,
+                              blurRadius: 12,
+                              offset: Offset(0, 2),
+                            ),
+                            Shadow(
+                              color: AppTheme.accentTeal,
+                              blurRadius: 4,
+                              offset: Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        'আপনার নির্ভরযোগ্য স্বাস্থ্য নির্দেশিকা',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppTheme.textSecondary,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 52),
+                      SizedBox(
+                        width: 150,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: const LinearProgressIndicator(
+                            color: AppTheme.accentTeal,
+                            backgroundColor: Color(0xFF1E293B),
+                            minHeight: 5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );

@@ -401,15 +401,19 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
 
   Widget _buildMedicineHeader(Medicine medicine) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1A2640), Color(0xFF161E31)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.accentTeal.withAlpha(60)),
+        color: AppTheme.cardBg,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppTheme.accentTeal.withAlpha(80), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.accentTeal.withAlpha(15),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -417,53 +421,63 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
           Text(
             medicine.name,
             style: const TextStyle(
-              fontSize: 24,
+              fontSize: 26,
               fontWeight: FontWeight.bold,
               color: AppTheme.accentTeal,
               letterSpacing: 0.5,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Text(
             medicine.genericName,
             style: const TextStyle(
-              fontSize: 15,
+              fontSize: 16, 
               color: AppTheme.textPrimary,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           Row(
             children: [
-              const Icon(Icons.business_rounded, size: 14, color: AppTheme.textSecondary),
-              const SizedBox(width: 6),
+              const Icon(
+                Icons.business_rounded,
+                size: 16,
+                color: AppTheme.textSecondary,
+              ),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   medicine.manufacturer,
                   style: const TextStyle(
-                    fontSize: 13,
+                    fontSize: 13.5,
                     color: AppTheme.textSecondary,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 18),
           SizedBox(
             width: double.infinity,
+            height: 48,
             child: OutlinedButton.icon(
               onPressed: () => _toggleLanguage(medicine),
               icon: Icon(
                 _isBengali ? Icons.language_rounded : Icons.g_translate_rounded,
-                size: 16,
+                size: 18,
               ),
-              label: Text(_isBengali ? 'ইংরেজিতে দেখুন (English)' : 'বাংলায় অনুবাদ করুন (Translate)'),
+              label: Text(
+                _isBengali
+                    ? 'ইংরেজিতে দেখুন (English)'
+                    : 'বাংলায় অনুবাদ করুন (Translate)',
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppTheme.accentTeal,
-                side: const BorderSide(color: AppTheme.accentTeal),
+                side: const BorderSide(color: AppTheme.accentTeal, width: 1.5),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 10),
               ),
             ),
           ),
@@ -476,36 +490,74 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
     return Row(
       children: [
         Expanded(
-          child: ElevatedButton.icon(
-            onPressed: () {
-              context.read<MedicineBloc>().add(ReadMedicineTtsEvent(ttsText));
-            },
-            icon: const Icon(Icons.volume_up_rounded),
-            label: const Text("পড়ে শোনান"),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.accentIndigo,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+          child: Container(
+            height: 52,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(colors: [AppTheme.accentIndigo, Color(0xFF4F46E5)]),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.accentIndigo.withAlpha(60),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ElevatedButton(
+              onPressed: () {
+                context.read<MedicineBloc>().add(ReadMedicineTtsEvent(ttsText));
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                foregroundColor: Colors.white,
+                shadowColor: Colors.transparent,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.volume_up_rounded),
+                  SizedBox(width: 8),
+                  Text(
+                    "পড়ে শোনান",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ],
               ),
             ),
           ),
         ),
-        const SizedBox(width: 10),
-        OutlinedButton(
-          onPressed: () {
-            context.read<MedicineBloc>().add(StopMedicineTtsEvent());
-          },
-          style: OutlinedButton.styleFrom(
-            foregroundColor: AppTheme.warningRed,
-            side: const BorderSide(color: Color(0xFF263238)),
-            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+        const SizedBox(width: 12),
+        Container(
+          height: 52,
+          decoration: BoxDecoration(
+            color: AppTheme.cardBg,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.warningRed.withAlpha(80), width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.warningRed.withAlpha(20),
+                blurRadius: 10,
+              ),
+            ],
           ),
-          child: const Icon(Icons.volume_off_rounded),
+          child: OutlinedButton(
+            onPressed: () {
+              context.read<MedicineBloc>().add(StopMedicineTtsEvent());
+            },
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppTheme.warningRed,
+              side: BorderSide.none,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            child: const Icon(Icons.volume_off_rounded),
+          ),
         ),
       ],
     );
@@ -532,23 +584,23 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
     }
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppTheme.cardBg,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFF263238)),
+        color: AppTheme.cardBg.withAlpha(150),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFF1F2937), width: 1.2),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 38,
-            height: 38,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
               color: color.withAlpha(25),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(icon, color: color, size: 22),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -699,9 +751,9 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
               child: Ink(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: AppTheme.cardBg,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppTheme.accentTeal.withAlpha(50)),
+                  color: AppTheme.cardBg.withAlpha(120),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: AppTheme.accentTeal.withAlpha(70), width: 1.2),
                 ),
                 child: Row(
                   children: [
@@ -710,7 +762,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                       height: 42,
                       decoration: BoxDecoration(
                         color: AppTheme.accentTeal.withAlpha(20),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
                         Icons.medication_rounded,

@@ -211,11 +211,18 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
   Widget _buildMedicineHeader(Medicine medicine) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: AppTheme.cardBg,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.accentTeal.withAlpha(60)),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppTheme.accentTeal.withAlpha(80), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.accentTeal.withAlpha(15),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -223,57 +230,63 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
           Text(
             medicine.name,
             style: const TextStyle(
-              fontSize: 24,
+              fontSize: 26,
               fontWeight: FontWeight.bold,
               color: AppTheme.accentTeal,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            medicine.genericName,
+            style: const TextStyle(
+              fontSize: 16, 
+              color: AppTheme.textPrimary,
+              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 6),
-          Text(
-            medicine.genericName,
-            style: const TextStyle(fontSize: 15, color: AppTheme.textPrimary),
-          ),
-          const SizedBox(height: 4),
           Row(
             children: [
               const Icon(
                 Icons.business_rounded,
-                size: 14,
+                size: 16,
                 color: AppTheme.textSecondary,
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   medicine.manufacturer,
                   style: const TextStyle(
-                    fontSize: 13,
+                    fontSize: 13.5,
                     color: AppTheme.textSecondary,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 18),
           SizedBox(
             width: double.infinity,
+            height: 48,
             child: OutlinedButton.icon(
               onPressed: _toggleLanguage,
               icon: Icon(
                 _isBengali ? Icons.language_rounded : Icons.g_translate_rounded,
-                size: 16,
+                size: 18,
               ),
               label: Text(
                 _isBengali
                     ? 'ইংরেজিতে দেখুন (English)'
                     : 'বাংলায় অনুবাদ করুন (Translate)',
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
               ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppTheme.accentTeal,
-                side: const BorderSide(color: AppTheme.accentTeal),
+                side: const BorderSide(color: AppTheme.accentTeal, width: 1.5),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 10),
               ),
             ),
           ),
@@ -283,23 +296,45 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
   }
 
   Widget _buildTtsButton() {
-    return SizedBox(
+    return Container(
       width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: _speak,
-        icon: Icon(
-          _isPlaying ? Icons.volume_off_rounded : Icons.volume_up_rounded,
-        ),
-        label: Text(_isPlaying ? "পড়া থামান" : "পড়ে শোনান"),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: _isPlaying
-              ? AppTheme.warningRed
-              : AppTheme.accentIndigo,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+      height: 52,
+      decoration: BoxDecoration(
+        gradient: _isPlaying
+            ? const LinearGradient(colors: [AppTheme.warningRed, Color(0xFFEF4444)])
+            : const LinearGradient(colors: [AppTheme.accentIndigo, Color(0xFF4F46E5)]),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: (_isPlaying ? AppTheme.warningRed : AppTheme.accentIndigo).withAlpha(60),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
+        ],
+      ),
+      child: ElevatedButton(
+        onPressed: _speak,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+          shadowColor: Colors.transparent,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              _isPlaying ? Icons.volume_off_rounded : Icons.volume_up_rounded,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              _isPlaying ? "পড়া থামান" : "পড়ে শোনান",
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ],
         ),
       ),
     );
@@ -326,23 +361,23 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
     }
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppTheme.cardBg,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFF263238)),
+        color: AppTheme.cardBg.withAlpha(150),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFF1F2937), width: 1.2),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 38,
-            height: 38,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
               color: color.withAlpha(25),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(icon, color: color, size: 22),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -492,9 +527,9 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
               child: Ink(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: AppTheme.cardBg,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppTheme.accentTeal.withAlpha(50)),
+                  color: AppTheme.cardBg.withAlpha(120),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: AppTheme.accentTeal.withAlpha(70), width: 1.2),
                 ),
                 child: Row(
                   children: [
@@ -503,7 +538,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                       height: 42,
                       decoration: BoxDecoration(
                         color: AppTheme.accentTeal.withAlpha(20),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
                         Icons.medication_rounded,

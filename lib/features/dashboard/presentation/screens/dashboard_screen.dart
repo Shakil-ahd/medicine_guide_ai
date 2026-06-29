@@ -53,6 +53,7 @@ class DashboardScreen extends StatelessWidget {
         builder: (context, state) {
           return Scaffold(
             backgroundColor: AppTheme.darkBg,
+            extendBody: true,
             appBar: _buildAppBar(state.currentIndex),
             body: IndexedStack(
               index: state.currentIndex,
@@ -111,20 +112,32 @@ class DashboardScreen extends StatelessWidget {
 
   Widget _buildBottomNav(BuildContext context, int currentIndex) {
     return Container(
+      margin: EdgeInsets.only(
+        left: 18,
+        right: 18,
+        bottom: 18 + MediaQuery.of(context).padding.bottom,
+      ),
       decoration: BoxDecoration(
-        color: AppTheme.cardBg,
-        border: const Border(top: BorderSide(color: Color(0xFF263238))),
+        color: AppTheme.glassBg,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppTheme.glassBorder, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(80),
-            blurRadius: 20,
-            offset: const Offset(0, -5),
+            color: Colors.black.withAlpha(100),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: AppTheme.accentTeal.withAlpha(15),
+            blurRadius: 16,
+            offset: const Offset(0, -2),
           ),
         ],
       ),
-      child: SafeArea(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -188,7 +201,7 @@ class DashboardScreen extends StatelessWidget {
 
   Widget _buildHomeView(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
       children: [
         _buildWelcomeBanner(),
         const SizedBox(height: 24),
@@ -209,20 +222,21 @@ class DashboardScreen extends StatelessWidget {
   Widget _buildWelcomeBanner() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(22),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0F2027), Color(0xFF203A43), Color(0xFF2C5364)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.accentTeal.withAlpha(50)),
+        gradient: AppTheme.welcomeGradient,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppTheme.accentTeal.withAlpha(65), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.accentTeal.withAlpha(30),
+            color: AppTheme.accentTeal.withAlpha(20),
             blurRadius: 20,
             offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: AppTheme.accentIndigo.withAlpha(15),
+            blurRadius: 30,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -230,37 +244,37 @@ class DashboardScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
             decoration: BoxDecoration(
-              color: AppTheme.accentTeal.withAlpha(40),
+              color: AppTheme.accentTeal.withAlpha(30),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: AppTheme.accentTeal.withAlpha(80)),
             ),
             child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.auto_awesome_rounded, color: AppTheme.accentTeal, size: 12),
-                SizedBox(width: 5),
+                Icon(Icons.auto_awesome_rounded, color: AppTheme.accentTeal, size: 13),
+                SizedBox(width: 6),
                 Text(
                   'ডিজিটাল সহায়িকা',
                   style: TextStyle(
                     color: AppTheme.accentTeal,
                     fontSize: 11,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
           const Text(
             'স্বাগতম! 👋',
-            style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white),
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           const Text(
             'ওষুধের পাতা স্ক্যান করুন অথবা প্রেসক্রিপশন আপলোড করে বিস্তারিত তথ্য ও নির্দেশিকা পান।',
-            style: TextStyle(fontSize: 14, color: Colors.white70, height: 1.5),
+            style: TextStyle(fontSize: 14, color: AppTheme.textSecondary, height: 1.55),
           ),
         ],
       ),
@@ -352,37 +366,37 @@ class DashboardScreen extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(22),
         child: Ink(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [gradientColors[0].withAlpha(40), gradientColors[1].withAlpha(20)],
+              colors: [gradientColors[0].withAlpha(25), gradientColors[1].withAlpha(10)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: gradientColors[1].withAlpha(80)),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: gradientColors[1].withAlpha(60), width: 1.2),
           ),
           child: Row(
             children: [
               Container(
-                width: 48,
-                height: 48,
+                width: 52,
+                height: 52,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(colors: gradientColors),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
                       color: gradientColors[1].withAlpha(80),
-                      blurRadius: 12,
+                      blurRadius: 14,
                       offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-                child: Icon(icon, color: Colors.white, size: 24),
+                child: Icon(icon, color: Colors.white, size: 26),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 18),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -390,15 +404,15 @@ class DashboardScreen extends StatelessWidget {
                     Text(
                       title,
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: gradientColors[1],
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6),
                     Text(
                       subtitle,
-                      style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                      style: const TextStyle(fontSize: 12.5, color: AppTheme.textSecondary),
                     ),
                   ],
                 ),
@@ -422,50 +436,50 @@ class DashboardScreen extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(22),
         child: Ink(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [gradientColors[0].withAlpha(40), gradientColors[1].withAlpha(20)],
+              colors: [gradientColors[0].withAlpha(25), gradientColors[1].withAlpha(10)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: gradientColors[1].withAlpha(80)),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: gradientColors[1].withAlpha(60), width: 1.2),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 48,
-                height: 48,
+                width: 52,
+                height: 52,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(colors: gradientColors),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
                       color: gradientColors[1].withAlpha(80),
-                      blurRadius: 12,
+                      blurRadius: 14,
                       offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-                child: Icon(icon, color: Colors.white, size: 24),
+                child: Icon(icon, color: Colors.white, size: 26),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 18),
               Text(
                 title,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 15,
                   fontWeight: FontWeight.bold,
                   color: gradientColors[1],
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 6),
               Text(
                 subtitle,
-                style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+                style: const TextStyle(fontSize: 11.5, color: AppTheme.textSecondary),
               ),
             ],
           ),
