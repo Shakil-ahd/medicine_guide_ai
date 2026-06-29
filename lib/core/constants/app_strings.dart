@@ -1,7 +1,6 @@
 class AppStrings {
   static const String appSubtitle = "আপনার নির্ভরযোগ্য স্বাস্থ্য নির্দেশিকা";
 
-  // Onboarding
   static const String onboardingScanTitle = "ওষুধ স্ক্যানার ও তথ্য বিশ্লেষণ";
   static const String onboardingScanDesc =
       "যেকোনো ওষুধের পাতা স্ক্যান করে তার কার্যকারিতা, পার্শ্বপ্রতিক্রিয়া এবং বিকল্প ওষুধ জানুন মুহূর্তেই।";
@@ -18,7 +17,6 @@ class AppStrings {
       "আমি সতর্কীকরণটি পড়েছি এবং একমত পোষণ করছি।";
   static const String startApp = "অ্যাপ শুরু করুন";
 
-  // Dashboard / Home
   static const String homeTab = "হোম";
   static const String reminderTab = "রিমাইন্ডার";
   static const String historyTab = "হিস্ট্রি";
@@ -46,12 +44,12 @@ class AppStrings {
   static const String howToStep3Desc =
       "লোকাল ডাটাবেজ বা এআই দিয়ে বিস্তারিত তথ্য বাংলায় দেখুন";
 
-  // Reminders
   static const String activeReminders = "সক্রিয় রিমাইন্ডার";
   static const String inactiveReminders = "নিষ্ক্রিয়";
   static const String noReminders = "কোনো রিমাইন্ডার নেই";
   static const String noRemindersDesc =
       "নতুন রিমাইন্ডার যোগ করুন এবং\nওষুধ খাওয়ার সময় মনে রাখুন";
+
   static const String addReminder = "রিমাইন্ডার যোগ করুন";
   static const String editReminderTitle = "রিমাইন্ডার সম্পাদনা";
   static const String addReminderTitle = "নতুন রিমাইন্ডার";
@@ -65,7 +63,6 @@ class AppStrings {
   static const String daysOfWeek = "সপ্তাহের দিন";
   static const String update = "আপডেট করুন";
 
-  // Detail / Search Result
   static const String indicationsHeader = "নির্দেশনা";
   static const String dosageHeader = "সেবনমাত্রা";
   static const String instructionsHeader = "খাওয়ার নিয়ম";
