@@ -5,7 +5,11 @@ import 'package:medicine_guide_ai/features/scanner/data/models/medicine_model.da
 abstract class MedicineLocalDataSource {
   Future<void> cacheMedicine(MedicineModel medicine);
   Future<MedicineModel?> getCachedMedicineByOcrText(String ocrText);
-  Future<void> saveScanLog(String medicineName, bool isOffline, String? imagePath);
+  Future<void> saveScanLog(
+    String medicineName,
+    bool isOffline,
+    String? imagePath,
+  );
 }
 
 class MedicineLocalDataSourceImpl implements MedicineLocalDataSource {
@@ -24,10 +28,9 @@ class MedicineLocalDataSourceImpl implements MedicineLocalDataSource {
 
     // Helper to tokenize a string into alphanumeric components
     List<String> tokenize(String text) {
-      return RegExp(r'([a-zA-Z]+|\d+(?:\.\d+)?)')
-          .allMatches(text)
-          .map((m) => m.group(0)!)
-          .toList();
+      return RegExp(
+        r'([a-zA-Z]+|\d+(?:\.\d+)?)',
+      ).allMatches(text).map((m) => m.group(0)!).toList();
     }
 
     final dbTokens = tokenize(dbLower);
@@ -43,13 +46,33 @@ class MedicineLocalDataSourceImpl implements MedicineLocalDataSource {
     if (!strict) return true;
 
     final units = {
-      'mg', 'ml', 'g', 'mcg', 'iu', 'ug', 'percentage', 'percent', 'pc',
-      'tablet', 'tablets', 'capsule', 'capsules', 'cap', 'tab',
-      'vial', 'ampoule', 'syrup', 'suspension', 'injection', 'drops'
+      'mg',
+      'ml',
+      'g',
+      'mcg',
+      'iu',
+      'ug',
+      'percentage',
+      'percent',
+      'pc',
+      'tablet',
+      'tablets',
+      'capsule',
+      'capsules',
+      'cap',
+      'tab',
+      'vial',
+      'ampoule',
+      'syrup',
+      'suspension',
+      'injection',
+      'drops',
     };
 
     // Extract all numbers from DB name to identify primary strength
-    final dbNumbers = dbTokens.where((t) => RegExp(r'^\d+(?:\.\d+)?$').hasMatch(t)).toList();
+    final dbNumbers = dbTokens
+        .where((t) => RegExp(r'^\d+(?:\.\d+)?$').hasMatch(t))
+        .toList();
     final primaryDbNumber = dbNumbers.isNotEmpty ? dbNumbers.first : null;
 
     for (final token in dbTokens) {
@@ -73,7 +96,11 @@ class MedicineLocalDataSourceImpl implements MedicineLocalDataSource {
   }
 
   int _calculateScore(String dbName, String ocrText) {
-    final dbTokens = dbName.toLowerCase().split(RegExp(r'[^a-z0-9]+')).where((t) => t.isNotEmpty).toList();
+    final dbTokens = dbName
+        .toLowerCase()
+        .split(RegExp(r'[^a-z0-9]+'))
+        .where((t) => t.isNotEmpty)
+        .toList();
     int score = 0;
     for (final token in dbTokens) {
       if (ocrText.contains(token)) {
@@ -87,8 +114,6 @@ class MedicineLocalDataSourceImpl implements MedicineLocalDataSource {
   Future<MedicineModel?> getCachedMedicineByOcrText(String ocrText) async {
     final db = await _dbHelper.database;
     final cleanOcr = ocrText.toLowerCase();
-
-    // Extract individual alphanumeric tokens from OCR text for fast prefix seek
     final tokens = cleanOcr
         .split(RegExp(r'[^a-zA-Z0-9\-]+'))
         .map((w) => w.trim())
@@ -169,11 +194,15 @@ class MedicineLocalDataSourceImpl implements MedicineLocalDataSource {
         limit: 3,
       );
 
-      final mappedAlternatives = alternatives.map((alt) => {
-        'name': alt['name'],
-        'manufacturer': alt['manufacturer'],
-        'price': alt['price'] ?? 'N/A'
-      }).toList();
+      final mappedAlternatives = alternatives
+          .map(
+            (alt) => {
+              'name': alt['name'],
+              'manufacturer': alt['manufacturer'],
+              'price': alt['price'] ?? 'N/A',
+            },
+          )
+          .toList();
 
       matchedRow['genericAlternativesJson'] = jsonEncode(mappedAlternatives);
     } catch (_) {
@@ -184,7 +213,11 @@ class MedicineLocalDataSourceImpl implements MedicineLocalDataSource {
   }
 
   @override
-  Future<void> saveScanLog(String medicineName, bool isOffline, String? imagePath) async {
+  Future<void> saveScanLog(
+    String medicineName,
+    bool isOffline,
+    String? imagePath,
+  ) async {
     await _dbHelper.insertHistory({
       'medicineName': medicineName,
       'scannedAt': DateTime.now().toIso8601String(),

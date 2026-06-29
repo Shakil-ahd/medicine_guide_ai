@@ -30,10 +30,7 @@ void showInstructionsBottomSheet(BuildContext context) {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 8,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
               child: Row(
                 children: [
                   Container(
@@ -68,31 +65,36 @@ void showInstructionsBottomSheet(BuildContext context) {
                   _InstructionCard(
                     icon: Icons.local_hospital_rounded,
                     color: AppTheme.warningRed,
-                    text: 'অ্যাপের তথ্য শুধুমাত্র সাধারণ জ্ঞানের জন্য। জরুরি অবস্থায় সরাসরি ডাক্তারের সাথে যোগাযোগ করুন।',
+                    text:
+                        'অ্যাপের তথ্য শুধুমাত্র সাধারণ জ্ঞানের জন্য। জরুরি অবস্থায় সরাসরি ডাক্তারের সাথে যোগাযোগ করুন।',
                   ),
                   SizedBox(height: 12),
                   _InstructionCard(
                     icon: Icons.medication_rounded,
                     color: Color(0xFF06B6D4),
-                    text: 'ডোজ অনুযায়ী ওষুধ খাওয়ার সময় ঠিক রাখতে রিমাইন্ডার ব্যবহার করুন এবং কোনো অ্যালার্ম মিস করবেন না।',
+                    text:
+                        'ডোজ অনুযায়ী ওষুধ খাওয়ার সময় ঠিক রাখতে রিমাইন্ডার ব্যবহার করুন এবং কোনো অ্যালার্ম মিস করবেন না।',
                   ),
                   SizedBox(height: 12),
                   _InstructionCard(
                     icon: Icons.cancel_rounded,
                     color: AppTheme.warningRed,
-                    text: 'ওষুধ সেবনের পর পার্শ্বপ্রতিক্রিয়া দেখা দিলে তাৎক্ষণিকভাবে সেবন বন্ধ করুন ও চিকিৎসকের পরামর্শ নিন।',
+                    text:
+                        'ওষুধ সেবনের পর পার্শ্বপ্রতিক্রিয়া দেখা দিলে তাৎক্ষণিকভাবে সেবন বন্ধ করুন ও চিকিৎসকের পরামর্শ নিন।',
                   ),
                   SizedBox(height: 12),
                   _InstructionCard(
                     icon: Icons.ac_unit_rounded,
                     color: AppTheme.accentTeal,
-                    text: 'ওষুধ সবসময় আলো ও আর্দ্রতামুক্ত, শীতল ও শুষ্ক স্থানে এবং শিশুদের নাগালের বাইরে রাখুন।',
+                    text:
+                        'ওষুধ সবসময় আলো ও আর্দ্রতামুক্ত, শীতল ও শুষ্ক স্থানে এবং শিশুদের নাগালের বাইরে রাখুন।',
                   ),
                   SizedBox(height: 12),
                   _InstructionCard(
                     icon: Icons.verified_user_rounded,
                     color: Color(0xFFFBBF24),
-                    text: 'মেয়াদোত্তীর্ণ ওষুধ কখনো সেবন করবেন না। প্রতিটি ওষুধের মেয়াদ যাচাই করে সেবন করুন।',
+                    text:
+                        'মেয়াদোত্তীর্ণ ওষুধ কখনো সেবন করবেন না। প্রতিটি ওষুধের মেয়াদ যাচাই করে সেবন করুন।',
                   ),
                 ],
               ),

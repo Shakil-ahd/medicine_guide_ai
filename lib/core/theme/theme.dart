@@ -10,18 +10,18 @@ class AppTheme {
   static const Color warningRed = Color(0xFFFF5252); // Vibrant Warning Red
   static const Color textPrimary = Color(0xFFF9FAFB); // Pure White-Grey
   static const Color textSecondary = Color(0xFF9CA3AF); // Neutral Cool Grey
-  
+
   // Custom Glassmorphism / Acrylic Colors
   static Color glassBg = const Color(0xFF1E293B).withAlpha(140);
   static Color glassBorder = const Color(0xFF334155).withAlpha(100);
-  
+
   // Premium Linear Gradients
   static const Gradient primaryGradient = LinearGradient(
     colors: [accentTeal, accentIndigo],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
-  
+
   static const Gradient welcomeGradient = LinearGradient(
     colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF0F172A)],
     begin: Alignment.topLeft,
@@ -78,4 +78,3 @@ class AppTheme {
     );
   }
 }
-
