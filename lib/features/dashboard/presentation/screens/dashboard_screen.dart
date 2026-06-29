@@ -16,6 +16,7 @@ import 'package:medicine_guide_ai/features/reminder/data/repositories/reminder_r
 import 'package:medicine_guide_ai/features/reminder/presentation/bloc/reminder_bloc.dart';
 import 'package:medicine_guide_ai/features/reminder/presentation/bloc/reminder_event.dart';
 import 'package:medicine_guide_ai/features/reminder/presentation/screens/reminder_screen.dart';
+import 'package:medicine_guide_ai/features/reminder/presentation/screens/add_reminder_screen.dart';
 import 'package:medicine_guide_ai/features/scanner/data/datasources/medicine_local_datasource.dart';
 import 'package:medicine_guide_ai/features/scanner/data/datasources/medicine_remote_datasource.dart';
 import 'package:medicine_guide_ai/features/scanner/data/repositories/medicine_repository_impl.dart';
@@ -44,11 +45,9 @@ class DashboardScreen extends StatelessWidget {
           )..add(LoadRemindersEvent()),
         ),
         BlocProvider<HistoryBloc>(
-          create: (_) => HistoryBloc(
-            HistoryRepositoryImpl(
-              DatabaseHelper.instance,
-            ),
-          )..add(LoadHistoryEvent()),
+          create: (_) =>
+              HistoryBloc(HistoryRepositoryImpl(DatabaseHelper.instance))
+                ..add(LoadHistoryEvent()),
         ),
       ],
       child: BlocBuilder<NavigationBloc, NavigationState>(
@@ -66,6 +65,9 @@ class DashboardScreen extends StatelessWidget {
                 const SettingsScreen(),
               ],
             ),
+            floatingActionButton: state.currentIndex == 1
+                ? _buildReminderFab(context)
+                : null,
             bottomNavigationBar: _buildBottomNav(context, state.currentIndex),
           );
         },
@@ -96,7 +98,11 @@ class DashboardScreen extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(Icons.medication_rounded, color: Colors.white, size: 16),
+            child: const Icon(
+              Icons.medication_rounded,
+              color: Colors.white,
+              size: 16,
+            ),
           ),
           const SizedBox(width: 10),
           Text(
@@ -145,10 +151,34 @@ class DashboardScreen extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNavItem(context, 0, currentIndex, Icons.home_rounded, AppStrings.homeTab),
-                _buildNavItem(context, 1, currentIndex, Icons.alarm_rounded, AppStrings.reminderTab),
-                _buildNavItem(context, 2, currentIndex, Icons.history_edu_rounded, AppStrings.historyTab),
-                _buildNavItem(context, 3, currentIndex, Icons.settings_rounded, AppStrings.settingsTab),
+                _buildNavItem(
+                  context,
+                  0,
+                  currentIndex,
+                  Icons.home_rounded,
+                  AppStrings.homeTab,
+                ),
+                _buildNavItem(
+                  context,
+                  1,
+                  currentIndex,
+                  Icons.alarm_rounded,
+                  AppStrings.reminderTab,
+                ),
+                _buildNavItem(
+                  context,
+                  2,
+                  currentIndex,
+                  Icons.history_edu_rounded,
+                  AppStrings.historyTab,
+                ),
+                _buildNavItem(
+                  context,
+                  3,
+                  currentIndex,
+                  Icons.settings_rounded,
+                  AppStrings.settingsTab,
+                ),
               ],
             ),
           ),
@@ -178,7 +208,9 @@ class DashboardScreen extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.accentTeal.withAlpha(25) : Colors.transparent,
+          color: isSelected
+              ? AppTheme.accentTeal.withAlpha(25)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -194,7 +226,9 @@ class DashboardScreen extends StatelessWidget {
               label,
               style: TextStyle(
                 fontSize: 11,
-                color: isSelected ? AppTheme.accentTeal : AppTheme.textSecondary,
+                color: isSelected
+                    ? AppTheme.accentTeal
+                    : AppTheme.textSecondary,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal,
               ),
             ),
@@ -231,7 +265,10 @@ class DashboardScreen extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: AppTheme.welcomeGradient,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppTheme.accentTeal.withAlpha(65), width: 1.5),
+        border: Border.all(
+          color: AppTheme.accentTeal.withAlpha(65),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
             color: AppTheme.accentTeal.withAlpha(20),
@@ -258,7 +295,11 @@ class DashboardScreen extends StatelessWidget {
             child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.auto_awesome_rounded, color: AppTheme.accentTeal, size: 13),
+                Icon(
+                  Icons.auto_awesome_rounded,
+                  color: AppTheme.accentTeal,
+                  size: 13,
+                ),
                 SizedBox(width: 6),
                 Text(
                   'ডিজিটাল সহায়িকা',
@@ -274,12 +315,20 @@ class DashboardScreen extends StatelessWidget {
           const SizedBox(height: 16),
           const Text(
             AppStrings.welcomeText,
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
           const SizedBox(height: 8),
           const Text(
             AppStrings.welcomeDesc,
-            style: TextStyle(fontSize: 14, color: AppTheme.textSecondary, height: 1.55),
+            style: TextStyle(
+              fontSize: 14,
+              color: AppTheme.textSecondary,
+              height: 1.55,
+            ),
           ),
         ],
       ),
@@ -324,7 +373,10 @@ class DashboardScreen extends StatelessWidget {
                 title: AppConstants.scanMedicine,
                 subtitle: 'ক্যামেরা দিয়ে স্ক্যান করুন',
                 icon: Icons.document_scanner_rounded,
-                gradientColors: [const Color(0xFF00897B), const Color(0xFF00BFA5)],
+                gradientColors: [
+                  const Color(0xFF00897B),
+                  const Color(0xFF00BFA5),
+                ],
                 onTap: () => _showScanBottomSheet(context),
               ),
             ),
@@ -334,10 +386,15 @@ class DashboardScreen extends StatelessWidget {
                 title: AppConstants.prescriptionReader,
                 subtitle: 'হাতের লেখা পড়ুন',
                 icon: Icons.description_rounded,
-                gradientColors: [const Color(0xFF3949AB), const Color(0xFF5C6BC0)],
+                gradientColors: [
+                  const Color(0xFF3949AB),
+                  const Color(0xFF5C6BC0),
+                ],
                 onTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const PrescriptionScanScreen()),
+                  MaterialPageRoute(
+                    builder: (_) => const PrescriptionScanScreen(),
+                  ),
                 ),
               ),
             ),
@@ -376,12 +433,18 @@ class DashboardScreen extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [gradientColors[0].withAlpha(25), gradientColors[1].withAlpha(10)],
+              colors: [
+                gradientColors[0].withAlpha(25),
+                gradientColors[1].withAlpha(10),
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: gradientColors[1].withAlpha(60), width: 1.2),
+            border: Border.all(
+              color: gradientColors[1].withAlpha(60),
+              width: 1.2,
+            ),
           ),
           child: Row(
             children: [
@@ -417,12 +480,19 @@ class DashboardScreen extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       subtitle,
-                      style: const TextStyle(fontSize: 12.5, color: AppTheme.textSecondary),
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        color: AppTheme.textSecondary,
+                      ),
                     ),
                   ],
                 ),
               ),
-              const Icon(Icons.arrow_forward_ios_rounded, color: AppTheme.textSecondary, size: 16),
+              const Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: AppTheme.textSecondary,
+                size: 16,
+              ),
             ],
           ),
         ),
@@ -446,12 +516,18 @@ class DashboardScreen extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [gradientColors[0].withAlpha(25), gradientColors[1].withAlpha(10)],
+              colors: [
+                gradientColors[0].withAlpha(25),
+                gradientColors[1].withAlpha(10),
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: gradientColors[1].withAlpha(60), width: 1.2),
+            border: Border.all(
+              color: gradientColors[1].withAlpha(60),
+              width: 1.2,
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -484,7 +560,10 @@ class DashboardScreen extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 subtitle,
-                style: const TextStyle(fontSize: 11.5, color: AppTheme.textSecondary),
+                style: const TextStyle(
+                  fontSize: 11.5,
+                  color: AppTheme.textSecondary,
+                ),
               ),
             ],
           ),
@@ -495,9 +574,21 @@ class DashboardScreen extends StatelessWidget {
 
   Widget _buildHowToUse() {
     const steps = [
-      (Icons.camera_alt_rounded, AppStrings.howToStep1Title, AppStrings.howToStep1Desc),
-      (Icons.search_rounded, AppStrings.howToStep2Title, AppStrings.howToStep2Desc),
-      (Icons.auto_awesome_rounded, AppStrings.howToStep3Title, AppStrings.howToStep3Desc),
+      (
+        Icons.camera_alt_rounded,
+        AppStrings.howToStep1Title,
+        AppStrings.howToStep1Desc,
+      ),
+      (
+        Icons.search_rounded,
+        AppStrings.howToStep2Title,
+        AppStrings.howToStep2Desc,
+      ),
+      (
+        Icons.auto_awesome_rounded,
+        AppStrings.howToStep3Title,
+        AppStrings.howToStep3Desc,
+      ),
     ];
 
     return Container(
@@ -529,8 +620,22 @@ class DashboardScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textPrimary, fontSize: 14)),
-                      Text(desc, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12, height: 1.4)),
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textPrimary,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        desc,
+                        style: const TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontSize: 12,
+                          height: 1.4,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -553,12 +658,20 @@ class DashboardScreen extends StatelessWidget {
       child: const Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.warning_amber_rounded, color: AppTheme.warningRed, size: 20),
+          Icon(
+            Icons.warning_amber_rounded,
+            color: AppTheme.warningRed,
+            size: 20,
+          ),
           SizedBox(width: 10),
           Expanded(
             child: Text(
               AppConstants.medicalDisclaimer,
-              style: TextStyle(color: AppTheme.warningRed, fontSize: 12, height: 1.5),
+              style: TextStyle(
+                color: AppTheme.warningRed,
+                fontSize: 12,
+                height: 1.5,
+              ),
             ),
           ),
         ],
@@ -593,16 +706,44 @@ class DashboardScreen extends StatelessWidget {
                   const SizedBox(height: 20),
                   const Text(
                     AppStrings.scanMedicineDialogTitle,
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimary,
+                    ),
                   ),
                   const SizedBox(height: 6),
-                  const Text(AppStrings.scanSourceSelect, style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
+                  const Text(
+                    AppStrings.scanSourceSelect,
+                    style: TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 13,
+                    ),
+                  ),
                   const SizedBox(height: 24),
                   Row(
                     children: [
-                      Expanded(child: _buildSheetOption(context, sheetCtx, AppStrings.camera, Icons.camera_alt_rounded, ImageSource.camera, AppTheme.accentTeal)),
+                      Expanded(
+                        child: _buildSheetOption(
+                          context,
+                          sheetCtx,
+                          AppStrings.camera,
+                          Icons.camera_alt_rounded,
+                          ImageSource.camera,
+                          AppTheme.accentTeal,
+                        ),
+                      ),
                       const SizedBox(width: 14),
-                      Expanded(child: _buildSheetOption(context, sheetCtx, AppStrings.gallery, Icons.photo_library_rounded, ImageSource.gallery, AppTheme.accentIndigo)),
+                      Expanded(
+                        child: _buildSheetOption(
+                          context,
+                          sheetCtx,
+                          AppStrings.gallery,
+                          Icons.photo_library_rounded,
+                          ImageSource.gallery,
+                          AppTheme.accentIndigo,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -629,9 +770,7 @@ class DashboardScreen extends StatelessWidget {
         onTap: () async {
           Navigator.pop(sheetCtx);
           final picker = ImagePicker();
-          final image = await picker.pickImage(
-            source: source,
-          );
+          final image = await picker.pickImage(source: source);
           if (image != null && context.mounted) {
             Navigator.push(
               context,
@@ -639,29 +778,36 @@ class DashboardScreen extends StatelessWidget {
                 transitionDuration: const Duration(milliseconds: 300),
                 pageBuilder: (routeCtx, animation, secondaryAnimation) =>
                     BlocProvider(
-                  create: (_) => MedicineBloc(
-                    repository: MedicineRepositoryImpl(
-                      ocrService: OcrService(),
-                      localDataSource: MedicineLocalDataSourceImpl(DatabaseHelper.instance),
-                      remoteDataSource: MedicineRemoteDataSourceImpl(AiScannerService()),
+                      create: (_) => MedicineBloc(
+                        repository: MedicineRepositoryImpl(
+                          ocrService: OcrService(),
+                          localDataSource: MedicineLocalDataSourceImpl(
+                            DatabaseHelper.instance,
+                          ),
+                          remoteDataSource: MedicineRemoteDataSourceImpl(
+                            AiScannerService(),
+                          ),
+                        ),
+                        ttsService: TtsService(),
+                      ),
+                      child: ScanResultScreen(imagePath: image.path),
                     ),
-                    ttsService: TtsService(),
-                  ),
-                  child: ScanResultScreen(imagePath: image.path),
-                ),
                 transitionsBuilder:
                     (context, animation, secondaryAnimation, child) {
-                  return SlideTransition(
-                    position: Tween<Offset>(
-                      begin: const Offset(1.0, 0.0),
-                      end: Offset.zero,
-                    ).animate(CurvedAnimation(
-                      parent: animation,
-                      curve: Curves.easeOutCubic,
-                    )),
-                    child: child,
-                  );
-                },
+                      return SlideTransition(
+                        position:
+                            Tween<Offset>(
+                              begin: const Offset(1.0, 0.0),
+                              end: Offset.zero,
+                            ).animate(
+                              CurvedAnimation(
+                                parent: animation,
+                                curve: Curves.easeOutCubic,
+                              ),
+                            ),
+                        child: child,
+                      );
+                    },
               ),
             );
           }
@@ -678,10 +824,59 @@ class DashboardScreen extends StatelessWidget {
             children: [
               Icon(icon, color: color, size: 32),
               const SizedBox(height: 8),
-              Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 14)),
+              Text(
+                label,
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                ),
+              ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildReminderFab(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: AppTheme.primaryGradient,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.accentTeal.withAlpha(80),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => BlocProvider.value(
+                value: context.read<ReminderBloc>(),
+                child: const AddReminderScreen(),
+              ),
+            ),
+          );
+        },
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        highlightElevation: 0,
+        icon: const Icon(Icons.alarm_add_rounded, color: Colors.white),
+        label: const Text(
+          AppStrings.addReminderTitle,
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.5,
+          ),
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
   }

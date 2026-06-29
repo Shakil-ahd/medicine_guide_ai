@@ -26,7 +26,6 @@ class ReminderScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.darkBg,
-      floatingActionButtonLocation: const _CustomFloatingActionButtonLocation(),
       body: BlocBuilder<ReminderBloc, ReminderState>(
         builder: (context, state) {
           if (state is ReminderLoading) {
@@ -46,37 +45,6 @@ class ReminderScreen extends StatelessWidget {
           }
           return const SizedBox.shrink();
         },
-      ),
-      floatingActionButton: Container(
-        decoration: BoxDecoration(
-          gradient: AppTheme.primaryGradient,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: AppTheme.accentTeal.withAlpha(80),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: FloatingActionButton.extended(
-          onPressed: () => _openAdd(context),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          highlightElevation: 0,
-          icon: const Icon(Icons.alarm_add_rounded, color: Colors.white),
-          label: const Text(
-            AppStrings.addReminderTitle,
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.5,
-            ),
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-        ),
       ),
     );
   }
@@ -433,22 +401,5 @@ class ReminderScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class _CustomFloatingActionButtonLocation extends FloatingActionButtonLocation {
-  const _CustomFloatingActionButtonLocation();
-
-  @override
-  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
-    final double fabX = scaffoldGeometry.scaffoldSize.width -
-        scaffoldGeometry.floatingActionButtonSize.width -
-        16 -
-        scaffoldGeometry.minInsets.right;
-    final double fabY = scaffoldGeometry.scaffoldSize.height -
-        scaffoldGeometry.floatingActionButtonSize.height -
-        110 -
-        scaffoldGeometry.minInsets.bottom;
-    return Offset(fabX, fabY);
   }
 }
